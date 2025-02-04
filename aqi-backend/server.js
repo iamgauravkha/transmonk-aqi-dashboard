@@ -250,7 +250,7 @@ mqttClient.on("message", async (topic, message) => {
 // };
 
 // Run the function every minute
-setInterval(processMinuteAverages, 60 * 1000);
+// setInterval(processMinuteAverages, 60 * 1000);
 
 app.use("/api/v1", routes);
 
