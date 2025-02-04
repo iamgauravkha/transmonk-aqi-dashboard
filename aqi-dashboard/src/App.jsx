@@ -202,19 +202,19 @@ const App = () => {
       <img
         src="/shade-left.png"
         alt=""
-        className="absolute top-0 left-0 z-[-1] h-full object-cover hidden sm:flex"
+        className="absolute top-0 left-0 z-[-1] h-full object-cover hidden lg:flex"
       />
       <img
         src="/shade-right.png"
         alt=""
-        className="absolute top-0 right-0 z-[-1] h-full object-cover hidden sm:flex"
+        className="absolute top-0 right-0 z-[-1] h-full object-cover hidden lg:flex"
       />
       <div className="max-w-[1440px] mx-auto px-5 sm:px-10">
         {/* Navbar */}
         <Navbar location={location} />
       </div>
       <div className="max-w-[1440px] mx-auto px-5 sm:px-10 py-5 flex flex-col gap-5">
-        <div className=" py-5 flex flex-col items-center gap-5 sm:hidden">
+        <div className=" py-5 flex flex-col items-center gap-5 lg:hidden">
           <h2 className="text-2xl font-sb text-blue-700 mb-2">
             Air Quality Index
           </h2>
@@ -259,10 +259,10 @@ const App = () => {
           <img
             src="/forest.jpg"
             alt="Forest"
-            className="w-[100%] mt-[-105px] z-[-1]"
+            className="w-[100%] mt-[-105px] sm:mt-[-350px] opacity-[100%] sm:opacity-[60%] z-[-1]"
           />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-10">
           {/* Outdoor Air Quality Section */}
           <div className="py-5 flex flex-col gap-5">
             <h2 className="text-xl font-b text-green-600 mb-2">
@@ -309,7 +309,7 @@ const App = () => {
           </div>
 
           {/* AQI Display */}
-          <div className=" py-5 flex-col items-center gap-5 hidden sm:flex">
+          <div className=" py-5 flex-col items-center gap-5 hidden lg:flex">
             <h2 className="text-2xl font-sb text-blue-700 mb-2">
               Air Quality Index
             </h2>
