@@ -126,128 +126,128 @@ mqttClient.on("message", async (topic, message) => {
   }
 });
 
-const processMinuteAverages = async () => {
-  try {
-    const now = new Date();
-    const oneMinuteAgo = new Date(now.getTime() - 60 * 1000); // 1 minute ago
+// const processMinuteAverages = async () => {
+//   try {
+//     const now = new Date();
+//     const oneMinuteAgo = new Date(now.getTime() - 60 * 1000); // 1 minute ago
 
-    const devices = await deviceModel.distinct("deviceId"); // Get all unique device IDs
+//     const devices = await deviceModel.distinct("deviceId"); // Get all unique device IDs
 
-    for (const deviceId of devices) {
-      // Fetch all entries from the last 1 minute for ALL sensors
-      const deviceData = await deviceModel.find({
-        deviceId,
-        $or: [
-          { "cO2.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-          {
-            "massConcentrationPm2p5.timestamp": {
-              $gte: oneMinuteAgo,
-              $lt: now,
-            },
-          },
-          {
-            "massConcentrationPm10p0.timestamp": {
-              $gte: oneMinuteAgo,
-              $lt: now,
-            },
-          },
-          { "vocIndex.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-          { "ambientHumidity.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-          { "ambientTemperature.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-        ],
-      });
+//     for (const deviceId of devices) {
+//       // Fetch all entries from the last 1 minute for ALL sensors
+//       const deviceData = await deviceModel.find({
+//         deviceId,
+//         $or: [
+//           { "cO2.timestamp": { $gte: oneMinuteAgo, $lt: now } },
+//           {
+//             "massConcentrationPm2p5.timestamp": {
+//               $gte: oneMinuteAgo,
+//               $lt: now,
+//             },
+//           },
+//           {
+//             "massConcentrationPm10p0.timestamp": {
+//               $gte: oneMinuteAgo,
+//               $lt: now,
+//             },
+//           },
+//           { "vocIndex.timestamp": { $gte: oneMinuteAgo, $lt: now } },
+//           { "ambientHumidity.timestamp": { $gte: oneMinuteAgo, $lt: now } },
+//           { "ambientTemperature.timestamp": { $gte: oneMinuteAgo, $lt: now } },
+//         ],
+//       });
 
-      if (deviceData.length === 0) continue; // Skip if no data found
+//       if (deviceData.length === 0) continue; // Skip if no data found
 
-      const average = (arr) =>
-        arr.length ? arr.reduce((sum, val) => sum + val, 0) / arr.length : null;
+//       const average = (arr) =>
+//         arr.length ? arr.reduce((sum, val) => sum + val, 0) / arr.length : null;
 
-      // Extract sensor values
-      const cO2Values = [];
-      const massConcentrationPm2p5Values = [];
-      const massConcentrationPm10p0Values = [];
-      const vocIndexValues = [];
-      const ambientHumidityValues = [];
-      const ambientTemperatureValues = [];
+//       // Extract sensor values
+//       const cO2Values = [];
+//       const massConcentrationPm2p5Values = [];
+//       const massConcentrationPm10p0Values = [];
+//       const vocIndexValues = [];
+//       const ambientHumidityValues = [];
+//       const ambientTemperatureValues = [];
 
-      deviceData.forEach((entry) => {
-        if (entry.cO2) entry.cO2.forEach((d) => cO2Values.push(d.value));
-        if (entry.massConcentrationPm2p5)
-          entry.massConcentrationPm2p5.forEach((d) =>
-            massConcentrationPm2p5Values.push(d.value)
-          );
-        if (entry.massConcentrationPm10p0)
-          entry.massConcentrationPm10p0.forEach((d) =>
-            massConcentrationPm10p0Values.push(d.value)
-          );
-        if (entry.vocIndex)
-          entry.vocIndex.forEach((d) => vocIndexValues.push(d.value));
-        if (entry.ambientHumidity)
-          entry.ambientHumidity.forEach((d) =>
-            ambientHumidityValues.push(d.value)
-          );
-        if (entry.ambientTemperature)
-          entry.ambientTemperature.forEach((d) =>
-            ambientTemperatureValues.push(d.value)
-          );
-      });
+//       deviceData.forEach((entry) => {
+//         if (entry.cO2) entry.cO2.forEach((d) => cO2Values.push(d.value));
+//         if (entry.massConcentrationPm2p5)
+//           entry.massConcentrationPm2p5.forEach((d) =>
+//             massConcentrationPm2p5Values.push(d.value)
+//           );
+//         if (entry.massConcentrationPm10p0)
+//           entry.massConcentrationPm10p0.forEach((d) =>
+//             massConcentrationPm10p0Values.push(d.value)
+//           );
+//         if (entry.vocIndex)
+//           entry.vocIndex.forEach((d) => vocIndexValues.push(d.value));
+//         if (entry.ambientHumidity)
+//           entry.ambientHumidity.forEach((d) =>
+//             ambientHumidityValues.push(d.value)
+//           );
+//         if (entry.ambientTemperature)
+//           entry.ambientTemperature.forEach((d) =>
+//             ambientTemperatureValues.push(d.value)
+//           );
+//       });
 
-      const minuteData = {
-        minute: now.getMinutes(),
-        cO2: average(cO2Values),
-        massConcentrationPm2p5: average(massConcentrationPm2p5Values),
-        massConcentrationPm10p0: average(massConcentrationPm10p0Values),
-        vocIndex: average(vocIndexValues),
-        ambientHumidity: average(ambientHumidityValues),
-        ambientTemperature: average(ambientTemperatureValues),
-      };
+//       const minuteData = {
+//         minute: now.getMinutes(),
+//         cO2: average(cO2Values),
+//         massConcentrationPm2p5: average(massConcentrationPm2p5Values),
+//         massConcentrationPm10p0: average(massConcentrationPm10p0Values),
+//         vocIndex: average(vocIndexValues),
+//         ambientHumidity: average(ambientHumidityValues),
+//         ambientTemperature: average(ambientTemperatureValues),
+//       };
 
-      // Find or create a minute-wise data document for today
-      const existingData = await minuteWiseData.findOne({
-        deviceId,
-        date: now.toDateString(),
-      });
+//       // Find or create a minute-wise data document for today
+//       const existingData = await minuteWiseData.findOne({
+//         deviceId,
+//         date: now.toDateString(),
+//       });
 
-      if (existingData) {
-        existingData.minutes.push(minuteData);
-        await existingData.save();
-      } else {
-        await new minuteWiseData({
-          deviceId,
-          date: now.toDateString(),
-          minutes: [minuteData],
-        }).save();
-      }
+//       if (existingData) {
+//         existingData.minutes.push(minuteData);
+//         await existingData.save();
+//       } else {
+//         await new minuteWiseData({
+//           deviceId,
+//           date: now.toDateString(),
+//           minutes: [minuteData],
+//         }).save();
+//       }
 
-      // Delete processed entries
-      await deviceModel.deleteMany({
-        deviceId,
-        $or: [
-          { "cO2.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-          {
-            "massConcentrationPm2p5.timestamp": {
-              $gte: oneMinuteAgo,
-              $lt: now,
-            },
-          },
-          {
-            "massConcentrationPm10p0.timestamp": {
-              $gte: oneMinuteAgo,
-              $lt: now,
-            },
-          },
-          { "vocIndex.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-          { "ambientHumidity.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-          { "ambientTemperature.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-        ],
-      });
+//       // Delete processed entries
+//       await deviceModel.deleteMany({
+//         deviceId,
+//         $or: [
+//           { "cO2.timestamp": { $gte: oneMinuteAgo, $lt: now } },
+//           {
+//             "massConcentrationPm2p5.timestamp": {
+//               $gte: oneMinuteAgo,
+//               $lt: now,
+//             },
+//           },
+//           {
+//             "massConcentrationPm10p0.timestamp": {
+//               $gte: oneMinuteAgo,
+//               $lt: now,
+//             },
+//           },
+//           { "vocIndex.timestamp": { $gte: oneMinuteAgo, $lt: now } },
+//           { "ambientHumidity.timestamp": { $gte: oneMinuteAgo, $lt: now } },
+//           { "ambientTemperature.timestamp": { $gte: oneMinuteAgo, $lt: now } },
+//         ],
+//       });
 
-      console.log(`Processed minute-wise average for device ${deviceId}`);
-    }
-  } catch (error) {
-    console.error("Error processing minute-wise averages:", error);
-  }
-};
+//       console.log(`Processed minute-wise average for device ${deviceId}`);
+//     }
+//   } catch (error) {
+//     console.error("Error processing minute-wise averages:", error);
+//   }
+// };
 
 // Run the function every minute
 setInterval(processMinuteAverages, 60 * 1000);
