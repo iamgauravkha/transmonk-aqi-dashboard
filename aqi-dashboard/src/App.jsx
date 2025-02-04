@@ -214,7 +214,7 @@ const App = () => {
         <Navbar location={location} />
       </div>
       <div className="max-w-[1440px] mx-auto px-5 sm:px-10 py-5 flex flex-col gap-5">
-        <div className=" py-5 flex flex-col items-center gap-5 d-border sm:hidden">
+        <div className=" py-5 flex flex-col items-center gap-5 sm:hidden">
           <h2 className="text-2xl font-sb text-blue-700 mb-2">
             Air Quality Index
           </h2>
