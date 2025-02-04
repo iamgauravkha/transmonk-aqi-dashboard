@@ -54,8 +54,11 @@ const App = () => {
           )
             .then((response) => response.json())
             .then((data) => {
-              console.log(data.display_name);
-              setLocation(data?.address?.city || "Unknown location");
+              setLocation(
+                data?.address?.city ||
+                  data?.address?.state_district?.split(" ")[0] ||
+                  "Unknown location"
+              );
               fetchOutsideAQI(latitude, longitude);
               fetchInsideAQI();
             })
@@ -123,6 +126,7 @@ const App = () => {
       const res = await fetch(
         `https://transmonk-aqi-dashboard.onrender.com/api/v1/sensor-data`
       );
+      // const res = await fetch(`http://localhost:4500/api/v1/sensor-data`);
 
       const API = await res.json();
 
@@ -185,7 +189,7 @@ const App = () => {
         localStorage.getItem("lat"),
         localStorage.getItem("long")
       );
-    }, 60000);
+    }, 300000);
     return () => {
       clearInterval(interval);
     };
@@ -198,60 +202,114 @@ const App = () => {
       <img
         src="/shade-left.png"
         alt=""
-        className="absolute top-0 left-0 z-[-1] h-full object-cover"
+        className="absolute top-0 left-0 z-[-1] h-full object-cover hidden sm:flex"
       />
       <img
         src="/shade-right.png"
         alt=""
-        className="absolute top-0 right-0 z-[-1] h-full object-cover"
+        className="absolute top-0 right-0 z-[-1] h-full object-cover hidden sm:flex"
       />
       <div className="max-w-[1440px] mx-auto px-5 sm:px-10">
         {/* Navbar */}
         <Navbar location={location} />
       </div>
-      <div className="max-w-[1440px] mx-auto px-5 sm:px-10 py-5 ">
-        <div className="grid grid-cols-3 gap-5 sm:gap-10 ">
+      <div className="max-w-[1440px] mx-auto px-5 sm:px-10 py-5 flex flex-col gap-5">
+        <div className=" py-5 flex flex-col items-center gap-5 d-border sm:hidden">
+          <h2 className="text-2xl font-sb text-blue-700 mb-2">
+            Air Quality Index
+          </h2>
+          <div className="flex w-full justify-around ">
+            <div className="flex flex-col items-center gap-3">
+              <div
+                className={`h-30 w-30 flex flex-col items-center justify-center rounded-full bg-blue-300 text-white text-2xl font-b`}
+                style={{ background: `${outsideAQIColor}` }}
+              >
+                {outsideAQIData.aqi}
+                <h3 className="text-sm">Outside AQI</h3>
+              </div>
+              <p
+                className="text-sm font-sb"
+                style={{ color: `${outsideAQIColor}` }}
+              >
+                {outsideAQICategory}
+              </p>
+            </div>
+            <div className="flex flex-col items-center gap-3">
+              <div
+                className={`h-30 w-30 flex flex-col items-center justify-center rounded-full bg-[green] text-white text-2xl font-b`}
+                style={{ background: `${insideAQIColor}` }}
+              >
+                {insideAQIData.aqi}
+                <h3 className="text-sm">Inside AQI</h3>
+              </div>
+              <p
+                className="text-sm font-sb"
+                style={{ color: `${insideAQIColor}` }}
+              >
+                {insideAQICategory}
+              </p>
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 flex flex-col items-center gap-2">
+            Last updated
+            <span className="text-xs text-black">
+              {outsideAQIData.updatedAt}
+            </span>
+          </p>
+          <img
+            src="/forest.jpg"
+            alt="Forest"
+            className="w-[100%] mt-[-105px] z-[-1]"
+          />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-10">
           {/* Outdoor Air Quality Section */}
-          <div className="py-5 flex flex-col gap-5 ">
+          <div className="py-5 flex flex-col gap-5">
             <h2 className="text-xl font-b text-green-600 mb-2">
               Outdoor Air Quality
             </h2>
-            <div className="grid grid-cols-3 gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
               <CircularProgress
                 value={outsideAQIData.sensorsData.pm_2_5}
                 heading="PM2.5"
                 unit={"µg/m³"}
+                max={1000}
               />
               <CircularProgress
                 value={outsideAQIData.sensorsData.pm_10}
                 heading="PM10"
                 unit={"µg/m³"}
+                max={1000}
               />
               <CircularProgress
                 value={outsideAQIData.sensorsData.co_2}
                 heading="CO2"
                 unit={"ppm"}
+                max={2000}
               />
             </div>
             <HorizontalProgress
               value={outsideAQIData.sensorsData.temperature}
               heading="Temperature"
               unit={"°C"}
+              max={100}
             />
             <HorizontalProgress
               value={outsideAQIData.sensorsData.humidity}
               heading="Humidity"
               unit={"%"}
+              max={100}
             />
             <HorizontalProgress
               value={outsideAQIData.sensorsData.vocIndex}
               heading="VOC Index"
               unit={"ppb"}
+              max={500}
             />
           </div>
 
           {/* AQI Display */}
-          <div className=" py-5 flex flex-col items-center gap-5 ">
+          <div className=" py-5 flex-col items-center gap-5 hidden sm:flex">
             <h2 className="text-2xl font-sb text-blue-700 mb-2">
               Air Quality Index
             </h2>
@@ -296,11 +354,11 @@ const App = () => {
             <img src="/forest.jpg" alt="Forest" className="w-[100%] z-[-2]" />
           </div>
           {/* Outdoor Air Quality Section */}
-          <div className="py-5 flex flex-col gap-5">
+          <div className="py-5 flex flex-col  gap-5">
             <h2 className="text-xl font-b text-green-600 mb-2">
               Indoor Air Quality
             </h2>
-            <div className="grid grid-cols-3 gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
               <CircularProgress
                 value={insideAQIData.sensorsData.pm_2_5}
                 heading="PM2.5"
