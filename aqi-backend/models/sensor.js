@@ -9,7 +9,6 @@ const deviceSchema = new mongoose.Schema(
     vocIndex: [{ value: Number, timestamp: Date }],
     ambientHumidity: [{ value: Number, timestamp: Date }],
     ambientTemperature: [{ value: Number, timestamp: Date }],
-    timestamps: [{ type: Date }],
   },
   {
     timestamps: true,

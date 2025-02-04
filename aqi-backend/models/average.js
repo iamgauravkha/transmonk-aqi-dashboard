@@ -1,18 +1,24 @@
 import mongoose from "mongoose";
 
-const daywiseEntriesSchema = new mongoose.Schema({
-  date: { type: String, required: true, unique: true }, // Stores date in YYYY-MM-DD
-  hourlyData: [
-    {
-      timestamp: { type: Date, required: true },
-      avgCO2: Number,
-      avgPm2p5: Number,
-      avgPm10p0: Number,
-      avgvocIndex: Number,
-      avgTemp: Number,
-      avgHumidity: Number,
-      // avgFanRPM: Number,
-    },
-  ],
-});
-export default mongoose.model("daywiseEntries", daywiseEntriesSchema);
+const averageSchema = new mongoose.Schema(
+  {
+    deviceId: { type: String, required: true },
+    currentDay: { type: String, required: true }, // YYYY-MM-DD format
+    hours: [
+      {
+        hour: Number, // 0-23
+        cO2: Number,
+        massConcentrationPm2p5: Number,
+        massConcentrationPm10p0: Number,
+        vocIndex: Number,
+        ambientHumidity: Number,
+        ambientTemperature: Number,
+      },
+    ],
+  },
+  { timestamps: true }
+);
+
+const AverageModel = mongoose.model("Average", averageSchema);
+
+export default AverageModel;

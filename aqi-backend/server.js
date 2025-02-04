@@ -3,13 +3,13 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cron from "node-cron";
 import deviceModel from "./models/sensor.js";
-import daywiseEntries from "./models/average.js";
+import AverageModel from "./models/average.js";
+
 import mqtt from "mqtt";
 import morgan from "morgan";
 import routes from "./routes/index.js";
 dotenv.config();
 import { databaseConnection } from "./config/database.js";
-import minuteWiseData from "./models/minutes.js";
 
 const app = express();
 app.use(cors({ origin: true }));
@@ -126,131 +126,104 @@ mqttClient.on("message", async (topic, message) => {
   }
 });
 
-// const processMinuteAverages = async () => {
-//   try {
-//     const now = new Date();
-//     const oneMinuteAgo = new Date(now.getTime() - 60 * 1000); // 1 minute ago
+// Function to calculate and store hourly averages
+const calculateHourlyAverages = async () => {
+  console.log("Running hourly average calculation...");
 
-//     const devices = await deviceModel.distinct("deviceId"); // Get all unique device IDs
+  const currentTime = new Date();
+  const oneHourAgo = new Date(currentTime.getTime() - 60 * 60 * 1000);
+  const currentHour = currentTime.getHours();
+  const currentDay = currentTime.toISOString().split("T")[0]; // YYYY-MM-DD format
 
-//     for (const deviceId of devices) {
-//       // Fetch all entries from the last 1 minute for ALL sensors
-//       const deviceData = await deviceModel.find({
-//         deviceId,
-//         $or: [
-//           { "cO2.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-//           {
-//             "massConcentrationPm2p5.timestamp": {
-//               $gte: oneMinuteAgo,
-//               $lt: now,
-//             },
-//           },
-//           {
-//             "massConcentrationPm10p0.timestamp": {
-//               $gte: oneMinuteAgo,
-//               $lt: now,
-//             },
-//           },
-//           { "vocIndex.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-//           { "ambientHumidity.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-//           { "ambientTemperature.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-//         ],
-//       });
+  try {
+    // Get all devices
+    const devices = await deviceModel.find();
 
-//       if (deviceData.length === 0) continue; // Skip if no data found
+    for (const device of devices) {
+      let avgData = {
+        cO2: 0,
+        massConcentrationPm2p5: 0,
+        massConcentrationPm10p0: 0,
+        vocIndex: 0,
+        ambientHumidity: 0,
+        ambientTemperature: 0,
+      };
 
-//       const average = (arr) =>
-//         arr.length ? arr.reduce((sum, val) => sum + val, 0) / arr.length : null;
+      let count = 0;
 
-//       // Extract sensor values
-//       const cO2Values = [];
-//       const massConcentrationPm2p5Values = [];
-//       const massConcentrationPm10p0Values = [];
-//       const vocIndexValues = [];
-//       const ambientHumidityValues = [];
-//       const ambientTemperatureValues = [];
+      // Process each sensor to calculate averages
+      for (const sensorType of Object.keys(avgData)) {
+        const sensorValues = device[sensorType].filter(
+          (entry) => entry.timestamp >= oneHourAgo
+        );
 
-//       deviceData.forEach((entry) => {
-//         if (entry.cO2) entry.cO2.forEach((d) => cO2Values.push(d.value));
-//         if (entry.massConcentrationPm2p5)
-//           entry.massConcentrationPm2p5.forEach((d) =>
-//             massConcentrationPm2p5Values.push(d.value)
-//           );
-//         if (entry.massConcentrationPm10p0)
-//           entry.massConcentrationPm10p0.forEach((d) =>
-//             massConcentrationPm10p0Values.push(d.value)
-//           );
-//         if (entry.vocIndex)
-//           entry.vocIndex.forEach((d) => vocIndexValues.push(d.value));
-//         if (entry.ambientHumidity)
-//           entry.ambientHumidity.forEach((d) =>
-//             ambientHumidityValues.push(d.value)
-//           );
-//         if (entry.ambientTemperature)
-//           entry.ambientTemperature.forEach((d) =>
-//             ambientTemperatureValues.push(d.value)
-//           );
-//       });
+        if (sensorValues.length > 0) {
+          avgData[sensorType] =
+            sensorValues.reduce((sum, entry) => sum + entry.value, 0) /
+            sensorValues.length;
+          count++;
+        }
+      }
 
-//       const minuteData = {
-//         minute: now.getMinutes(),
-//         cO2: average(cO2Values),
-//         massConcentrationPm2p5: average(massConcentrationPm2p5Values),
-//         massConcentrationPm10p0: average(massConcentrationPm10p0Values),
-//         vocIndex: average(vocIndexValues),
-//         ambientHumidity: average(ambientHumidityValues),
-//         ambientTemperature: average(ambientTemperatureValues),
-//       };
+      // If no data received, mark values as 0
+      if (count === 0) {
+        avgData = {
+          cO2: 0,
+          massConcentrationPm2p5: 0,
+          massConcentrationPm10p0: 0,
+          vocIndex: 0,
+          ambientHumidity: 0,
+          ambientTemperature: 0,
+        };
+      }
 
-//       // Find or create a minute-wise data document for today
-//       const existingData = await minuteWiseData.findOne({
-//         deviceId,
-//         date: now.toDateString(),
-//       });
+      // Check if an entry for the current day already exists
+      let averageEntry = await AverageModel.findOne({
+        deviceId: device.deviceId,
+        currentDay,
+      });
 
-//       if (existingData) {
-//         existingData.minutes.push(minuteData);
-//         await existingData.save();
-//       } else {
-//         await new minuteWiseData({
-//           deviceId,
-//           date: now.toDateString(),
-//           minutes: [minuteData],
-//         }).save();
-//       }
+      if (!averageEntry) {
+        averageEntry = new AverageModel({
+          deviceId: device.deviceId,
+          currentDay,
+          hours: [],
+        });
+      }
 
-//       // Delete processed entries
-//       await deviceModel.deleteMany({
-//         deviceId,
-//         $or: [
-//           { "cO2.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-//           {
-//             "massConcentrationPm2p5.timestamp": {
-//               $gte: oneMinuteAgo,
-//               $lt: now,
-//             },
-//           },
-//           {
-//             "massConcentrationPm10p0.timestamp": {
-//               $gte: oneMinuteAgo,
-//               $lt: now,
-//             },
-//           },
-//           { "vocIndex.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-//           { "ambientHumidity.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-//           { "ambientTemperature.timestamp": { $gte: oneMinuteAgo, $lt: now } },
-//         ],
-//       });
+      // Add or update the hourly data
+      const hourIndex = averageEntry.hours.findIndex(
+        (h) => h.hour === currentHour
+      );
+      if (hourIndex === -1) {
+        averageEntry.hours.push({ hour: currentHour, ...avgData });
+      } else {
+        averageEntry.hours[hourIndex] = { hour: currentHour, ...avgData };
+      }
 
-//       console.log(`Processed minute-wise average for device ${deviceId}`);
-//     }
-//   } catch (error) {
-//     console.error("Error processing minute-wise averages:", error);
-//   }
-// };
+      // Save the updated averages
+      await averageEntry.save();
 
-// Run the function every minute
-// setInterval(processMinuteAverages, 60 * 1000);
+      // Delete processed sensor data from the device collection
+      for (const sensorType of Object.keys(avgData)) {
+        device[sensorType] = device[sensorType].filter(
+          (entry) => entry.timestamp < oneHourAgo
+        );
+      }
+
+      await device.save();
+    }
+
+    console.log("Hourly averages calculated and stored successfully.");
+  } catch (error) {
+    console.error("Error in calculating hourly averages:", error);
+  }
+};
+
+// Schedule the cron job to run at the start of every hour
+cron.schedule("0 * * * *", () => {
+  calculateHourlyAverages();
+});
 
 app.use("/api/v1", routes);
 
