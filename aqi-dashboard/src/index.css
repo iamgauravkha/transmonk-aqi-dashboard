@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+.d-border {
+  border: 1px solid red;
+}
+
+@font-face {
+  font-family: "font-r";
+  src: url("./assets/Poppins/Poppins-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "font-m";
+  src: url("./assets/Poppins/Poppins-Medium.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "font-sb";
+  src: url("./assets/Poppins/Poppins-SemiBold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "font-b";
+  src: url("./assets/Poppins/Poppins-Bold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "font-eb";
+  src: url("./assets/Poppins/Poppins-ExtraBold.ttf") format("truetype");
+}
+
+* {
+  font-family: font-r;
+}
+
+.font-m {
+  font-family: font-m;
+}
+
+.font-sb {
+  font-family: font-sb;
+}
+
+.font-b {
+  font-family: font-b;
+}
+
+.font-eb {
+  font-family: font-eb;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: black;
+}
