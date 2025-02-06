@@ -20,6 +20,8 @@ import pressure from "./assets/Pressure.svg";
 import rh from "./assets/RH.svg";
 import tick from "./assets/tick.svg";
 import valve from "./assets/Valve.svg";
+import fan_rpm from "./assets/fan-rpm.svg";
+
 import { LineChart } from "@mui/x-charts";
 import {
   Chart as ChartJS,
@@ -108,7 +110,12 @@ const App = () => {
     {
       label: "Temperature",
       value: "29°C",
-      icon: "",
+      icon: group,
+    },
+    {
+      label: "Fan RPM",
+      value: "600",
+      icon: fan_rpm,
     },
     {
       label: "RH",
@@ -116,30 +123,26 @@ const App = () => {
       icon: rh,
     },
     {
+      label: "Fan % Capacity",
+      value: "24%",
+      icon: fan_capacity,
+    },
+    {
       label: "CO2",
       value: "450 ppm",
       icon: co2,
-    },
-    {
-      label: "PM 2.5",
-      value: "72",
-      icon: pm2_5,
-    },
-    {
-      label: "Fan RPM",
-      value: "600",
-      icon: "",
-    },
-    {
-      label: "Fan Capacity",
-      value: "24%",
-      icon: fan_capacity,
     },
     {
       label: "Power",
       value: "49 W",
       icon: power,
     },
+    {
+      label: "PM 2.5",
+      value: "72",
+      icon: pm2_5,
+    },
+
     {
       label: "Pressure (DP)",
       value: "200",
@@ -151,16 +154,16 @@ const App = () => {
       icon: aqi,
     },
     {
-      label: "AQI",
-      value: "200",
-      icon: aqi,
+      label: "Valve",
+      value: "38%",
+      icon: valve,
     },
   ];
 
   return (
     <div className="w-full bg-[#f2f2f6]">
-      <div className="max-w-[1440px] mx-auto px-5 py-5 gap-5 grid grid-cols-2 min-h-screen overflow-hidden">
-        <div className=" grid grid-cols-1 grid-rows-8 gap-4 ">
+      <div className="max-w-[1440px] mx-auto px-5 py-5 gap-5 grid grid-cols-2 min-h-screen overflow-hidden ">
+        <div className=" grid grid-cols-1 grid-rows-8 gap-[10px] ">
           <div className="row-span-1">
             <img src="/logo.png" className="w-[175px] aspect-auto" alt="logo" />
           </div>
@@ -183,7 +186,9 @@ const App = () => {
             flex flex-col gap-5 py-[16px] px-[20px] rounded-xl border-2 border-white cus-background
             "
           >
-            <div className="text-[#888888] text-[13px] font-m">Power</div>
+            <div className="text-[#888888] text-[13px] font-m">
+              Power (Watts)
+            </div>
             {/* <LineChart
               xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
               series={[
@@ -200,17 +205,19 @@ const App = () => {
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-2 grid-rows-8 gap-5">
+        <div className="grid grid-cols-2 grid-rows-8 gap-[10px]">
           {metrics.map((e) => {
             return (
               <div
-                className="flex justify-between row-span-1 p-[10px]  rounded-xl border-2 border-white cus-background
+                className="flex justify-between row-span-1 px-[20px] items-center  rounded-xl border-2 border-white cus-background
                 
               "
               >
-                <div className="flex flex-col justify-between">
-                  <div className="text-[#888888] text-sm font-m">{e.label}</div>
-                  <div className="text-[#0cb8d3] text-base font-sb">
+                <div className="flex flex-col justify-between gap-3">
+                  <div className="text-[#888888] text-[13px] font-m">
+                    {e.label}
+                  </div>
+                  <div className="text-[#0cb8d3] text-[20px] font-sb leading-[15px]">
                     {e.value}
                   </div>
                 </div>
@@ -227,7 +234,9 @@ const App = () => {
             flex flex-col py-[16px] px-[20px] gap-5 rounded-xl border-2 border-white cus-background
             "
           >
-            <div className="text-[#888888] text-[13px] font-m">Temperature</div>
+            <div className="text-[#888888] text-[13px] font-m">
+              Temperature (°C)
+            </div>
             {/* <LineChart
               xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
               series={[
