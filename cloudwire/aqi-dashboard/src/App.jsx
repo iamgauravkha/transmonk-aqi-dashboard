@@ -99,7 +99,7 @@ const App = () => {
         fill: true,
         label: true,
         data: [11, 32, 45, 32, 34, 52, 41, 12, 10, 5, 2, 45],
-        borderColor: "gray",
+        borderColor: "transparent",
         // backgroundColor: gradient || "rgba(24, 205, 234, 0.8)", // Fallback color
         backgroundColor: "#18cdea",
         tension: 0.3, // Smooth corners
@@ -113,7 +113,7 @@ const App = () => {
         fill: true,
         label: true,
         data: [11, 32, 45, 32, 34, 52, 41, 12, 10, 5, 2, 45],
-        borderColor: "gray",
+        borderColor: "transparent",
         backgroundColor: "#1b47cc", // Fallback color
         tension: 0.3, // Smooth corners
       },
@@ -176,7 +176,7 @@ const App = () => {
 
   return (
     <div className="w-full bg-[#f2f2f6]">
-      <div className="max-w-[1440px] mx-auto px-5 py-5 gap-5 grid grid-cols-2 min-h-screen overflow-hidden ">
+      <div className="max-w-[1440px] mx-auto px-5 py-5 gap-5 grid grid-cols-1 md:grid-cols-2 min-h-screen overflow-hidden ">
         <div className=" grid grid-cols-1 grid-rows-8 gap-[10px] ">
           <div className="row-span-1">
             <img src="/logo.png" className="w-[175px] aspect-auto" alt="logo" />
@@ -219,11 +219,11 @@ const App = () => {
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-2 grid-rows-8 gap-[10px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 grid-rows-8 gap-[10px]">
           {metrics.map((e) => {
             return (
               <div
-                className="flex justify-between row-span-1 px-[20px] items-center  rounded-xl border-2 border-white cus-background
+                className="flex justify-between row-span-1 px-[20px] py-[16px] sm:py-[0px]  items-center  rounded-xl border-2 border-white cus-background
                 
               "
               >
@@ -244,7 +244,7 @@ const App = () => {
             );
           })}
           <div
-            className="row-span-3 col-span-2
+            className="row-span-3 cols-span-1 sm:col-span-2
             flex flex-col py-[16px] px-[20px] gap-5 rounded-xl border-2 border-white cus-background
             "
           >
