@@ -73,10 +73,10 @@ export const options = {
     },
   },
   maintainAspectRatio: false, // To prevent it from being distorted
-  // height: "150px", // Set your desired height (in pixels)
+  height: 0, // Set your desired height (in pixels)
 };
 
-const labels = ["January", "February", "March", "April", "May", "June", "July"];
+const labels = ["12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM"];
 
 const App = () => {
   const chartRef = useRef(null);
@@ -86,8 +86,8 @@ const App = () => {
     if (chartRef.current) {
       const ctx = chartRef.current.ctx;
       const gradientFill = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
-      gradientFill.addColorStop(0, "rgba(24, 205, 234, 0.5)");
-      gradientFill.addColorStop(1, "rgba(24, 205, 234, 0.1)");
+      gradientFill.addColorStop(0, "rgba(24, 205, 234, 1)");
+      gradientFill.addColorStop(1, "rgba(24, 205, 234, 1)");
       setGradient(gradientFill);
     }
   }, []);
@@ -99,8 +99,22 @@ const App = () => {
         fill: true,
         label: true,
         data: [11, 32, 45, 32, 34, 52, 41, 12, 10, 5, 2, 45],
-        borderColor: "rgba(24, 205, 234, 0.2)",
-        backgroundColor: gradient || "rgba(24, 205, 234, 0.2)", // Fallback color
+        borderColor: "gray",
+        // backgroundColor: gradient || "rgba(24, 205, 234, 0.8)", // Fallback color
+        backgroundColor: "#18cdea",
+        tension: 0.3, // Smooth corners
+      },
+    ],
+  };
+  const data2 = {
+    labels,
+    datasets: [
+      {
+        fill: true,
+        label: true,
+        data: [11, 32, 45, 32, 34, 52, 41, 12, 10, 5, 2, 45],
+        borderColor: "gray",
+        backgroundColor: "#1b47cc", // Fallback color
         tension: 0.3, // Smooth corners
       },
     ],
@@ -248,8 +262,8 @@ const App = () => {
               className="w-full"
               height={175}
             /> */}
-            <div className="h-[170px] w-full">
-              <Line ref={chartRef} options={options} data={data} />
+            <div className="h-[170px] w-auto">
+              <Line ref={chartRef} options={options} data={data2} />
             </div>
           </div>
         </div>
