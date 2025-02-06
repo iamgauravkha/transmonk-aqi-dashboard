@@ -213,11 +213,26 @@ const App = () => {
             />
           </div>
           <div
-            className="flex justify-between py-[16px] row-span-1 px-[20px] rounded-xl border-2 border-white cus-background
+            className="flex justify-center gap-2 flex-col row-span-1 px-[20px] py-[20px] sm:py-[0px] rounded-xl border-2 border-white cus-background
               "
           >
             <div className="text-[#888888] text-[13px] font-m">
               Fan Speed (%)
+            </div>
+            <div className="flex text-[13px] gap-5 flex-wrap justify-center sm:justify-start">
+              <div className="flex gap-5 flex-wrap">
+                <input
+                  type="text"
+                  className="border rounded-md border-gray-400 text-center w-[100px]"
+                  placeholder="20"
+                />
+                <button className="px-[9px] py-[3px] bg-[#0cb8d3] text-white rounded-md font-sb cursor-pointer">
+                  Change Speed
+                </button>
+              </div>
+              <button className="px-[9px] py-[3px] bg-red-400 text-white rounded-md font-sb cursor-pointer">
+                Stop
+              </button>
             </div>
           </div>
           <div
