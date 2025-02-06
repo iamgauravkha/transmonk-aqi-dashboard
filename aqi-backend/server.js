@@ -11,6 +11,8 @@ import routes from "./routes/index.js";
 dotenv.config();
 import { databaseConnection } from "./config/database.js";
 
+import trackModel from "./models/track.js";
+
 const app = express();
 app.use(cors({ origin: true }));
 app.use(morgan("tiny"));
@@ -37,35 +39,28 @@ mqttClient.on("connect", () => {
 
 // MQTT message handler
 mqttClient.on("message", async (topic, message) => {
+  // console.log(message);
   if (topic === "transmonk/hvac/demo/data") {
     try {
       const data = JSON.parse(message.toString());
       const deviceId = data.Deviceid;
-      const [
-        cO2,
-        massConcentrationPm2p5,
-        massConcentrationPm10p0,
-        vocIndex,
-        ambientHumidity,
-        ambientTemperature,
-      ] = data.Data;
 
       const timestamp = new Date();
 
       const extractedData = {
         deviceId,
-        cO2: { value: parseInt(cO2), timestamp },
+        cO2: { value: parseInt(data.Data[13]), timestamp },
         massConcentrationPm2p5: {
-          value: parseInt(massConcentrationPm2p5),
+          value: parseInt(data.Data[15]),
           timestamp,
         },
         massConcentrationPm10p0: {
-          value: parseInt(massConcentrationPm10p0),
+          value: parseInt(data.Data[16]),
           timestamp,
         },
-        vocIndex: { value: parseInt(vocIndex), timestamp },
-        ambientHumidity: { value: parseInt(ambientHumidity), timestamp },
-        ambientTemperature: { value: parseInt(ambientTemperature), timestamp },
+        vocIndex: { value: parseInt(data.Data[17]), timestamp },
+        ambientHumidity: { value: parseInt(data.Data[18]), timestamp },
+        ambientTemperature: { value: parseInt(data.Data[19]), timestamp },
       };
 
       // console.log(extractedData);
@@ -73,7 +68,7 @@ mqttClient.on("message", async (topic, message) => {
       // Check if document with the same deviceId exists
       const existingEntry = await deviceModel.findOne({ deviceId });
 
-      console.log(existingEntry);
+      // console.log(existingEntry);
       if (existingEntry) {
         // Update the existing entry by pushing the new object with value and timestamp
         // existingEntry.cO2 = [
@@ -214,6 +209,10 @@ const calculateHourlyAverages = async () => {
       await device.save();
     }
 
+    await trackModel.create({
+      average: `Average calculated for ${currentDay} and ${currentHour} successfully.`,
+    });
+
     console.log("Hourly averages calculated and stored successfully.");
   } catch (error) {
     console.error("Error in calculating hourly averages:", error);
@@ -222,6 +221,7 @@ const calculateHourlyAverages = async () => {
 
 // Schedule the cron job to run at the start of every hour
 cron.schedule("0 * * * *", () => {
+  console.log("Cron scheduled");
   calculateHourlyAverages();
 });
 

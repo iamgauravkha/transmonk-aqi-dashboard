@@ -123,10 +123,10 @@ const App = () => {
   let colour = "";
   const fetchInsideAQI = async () => {
     try {
-      const res = await fetch(
-        `https://transmonk-aqi-dashboard.onrender.com/api/v1/sensor-data`
-      );
-      // const res = await fetch(`http://localhost:4500/api/v1/sensor-data`);
+      // const res = await fetch(
+      //   `https://transmonk-aqi-dashboard.onrender.com/api/v1/sensor-data`
+      // );
+      const res = await fetch(`http://localhost:4500/api/v1/sensor-data`);
 
       const API = await res.json();
 
