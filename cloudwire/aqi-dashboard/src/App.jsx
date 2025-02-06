@@ -21,6 +21,7 @@ import rh from "./assets/RH.svg";
 import tick from "./assets/tick.svg";
 import valve from "./assets/Valve.svg";
 import fan_rpm from "./assets/fan-rpm.svg";
+import ffu from "./assets/ahu.png";
 
 import { LineChart } from "@mui/x-charts";
 import {
@@ -115,6 +116,10 @@ const App = () => {
         backgroundColor: gradientone || "rgba(24, 205, 234, 0.8)", // Fallback color
         // backgroundColor: "#18cdea",
         tension: 0.3, // Smooth corners
+        pointBackgroundColor: "white", // White dots
+        pointBorderColor: "#077b8d", // White border for dots
+        // pointRadius: 5, // Size of dots
+        // pointHoverRadius: 7, // Bigger dots on hover
       },
     ],
   };
@@ -128,6 +133,8 @@ const App = () => {
         borderColor: "#1241cc",
         backgroundColor: gradienttwo || "rgba(24, 205, 234, 0.8)", // Fallback color
         tension: 0.3, // Smooth corners
+        pointBackgroundColor: "white", // White dots
+        pointBorderColor: "#1241cc",
       },
     ],
   };
@@ -198,7 +205,13 @@ const App = () => {
             style={{
               boxShadow: "0px 4px 2px 0px rgba(129, 168, 247, 0.4)",
             }}
-          ></div>
+          >
+            <img
+              src={ffu}
+              alt=""
+              className="h-[200px] w-auto object-contain mx-auto drop-shadow-2xl"
+            />
+          </div>
           <div
             className="flex justify-between py-[16px] row-span-1 px-[20px] rounded-xl border-2 border-white cus-background
               "
