@@ -198,7 +198,7 @@ const App = () => {
   useEffect(() => {}, [insideAQIData, outsideAQIData]);
 
   return (
-    <div className="w-full">
+    <div className="w-full  relative min-h-screen">
       <img
         src="/shade-left.png"
         alt=""
@@ -213,7 +213,7 @@ const App = () => {
         {/* Navbar */}
         <Navbar location={location} />
       </div>
-      <div className="max-w-[1440px] mx-auto px-5 sm:px-10 py-5 flex flex-col gap-5">
+      <div className="max-w-[1440px] mx-auto px-5 sm:px-10 flex flex-col gap-5">
         <div className=" py-5 flex flex-col items-center gap-5 lg:hidden">
           <h2 className="text-2xl font-sb text-blue-700 mb-2">
             Air Quality Index
@@ -262,7 +262,7 @@ const App = () => {
             className="w-[100%] mt-[-105px] sm:mt-[-350px] opacity-[100%] sm:opacity-[60%] z-[-1]"
           />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-10 ">
           {/* Outdoor Air Quality Section */}
           <div className="py-5 flex flex-col gap-5">
             <h2 className="text-xl font-b text-green-600 mb-2">
@@ -351,7 +351,11 @@ const App = () => {
                 {outsideAQIData.updatedAt}
               </span>
             </p>
-            <img src="/forest.jpg" alt="Forest" className="w-[100%] z-[-2]" />
+            <img
+              src="/forest.jpg"
+              alt="Forest"
+              className="w-[85%] my-[-10px]  z-[-2]"
+            />
           </div>
           {/* Outdoor Air Quality Section */}
           <div className="py-5 flex flex-col  gap-5">
