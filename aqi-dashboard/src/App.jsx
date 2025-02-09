@@ -126,7 +126,7 @@ const App = () => {
   const fetchInsideAQI = async () => {
     try {
       const res = await fetch(
-        import.meta.env.VITE_ENVIRONMENT === "dev"
+        import.meta.env.VITE_ENVIRONMENT
           ? `http://localhost:4500/api/v1/sensor-data`
           : `https://transmonk-aqi-dashboard.onrender.com/api/v1/sensor-data`
       );
@@ -190,7 +190,7 @@ const App = () => {
   const fetchAverageData = async () => {
     try {
       const res = await fetch(
-        import.meta.env.VITE_ENVIRONMENT === "dev"
+        import.meta.env.VITE_ENVIRONMENT
           ? `http://localhost:4500/api/v1/average-data`
           : `https://transmonk-aqi-dashboard.onrender.com/api/v1/average-data`
       );
