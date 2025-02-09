@@ -8,9 +8,11 @@ import {
   PM25_BREAKPOINTS,
 } from "./utils/aqiUtils";
 import Navbar from "./components/Navbar";
+import Graph from "./components/Graph";
 
 const App = () => {
-  const [location, setLocation] = useState("Fetching Location...");
+  const [location, setLocation] = useState(null);
+  const [graph, setGraph] = useState(false);
   const [outsideAQIData, setOutsideAQIData] = useState({
     updatedAt: null,
     aqi: 0,
@@ -123,10 +125,11 @@ const App = () => {
   let colour = "";
   const fetchInsideAQI = async () => {
     try {
-      // const res = await fetch(
-      //   `https://transmonk-aqi-dashboard.onrender.com/api/v1/sensor-data`
-      // );
-      const res = await fetch(`http://localhost:4500/api/v1/sensor-data`);
+      const res = await fetch(
+        import.meta.env.VITE_ENVIRONMENT === "dev"
+          ? `http://localhost:4500/api/v1/sensor-data`
+          : `https://transmonk-aqi-dashboard.onrender.com/api/v1/sensor-data`
+      );
 
       const API = await res.json();
 
@@ -181,6 +184,23 @@ const App = () => {
     }
   };
 
+  const [selectedReading, setSelectedReading] = useState(""); // Default reading
+  const [averageData, setAverageData] = useState(null); // Default reading
+
+  const fetchAverageData = async () => {
+    try {
+      const res = await fetch(
+        import.meta.env.VITE_ENVIRONMENT === "dev"
+          ? `http://localhost:4500/api/v1/average-data`
+          : `https://transmonk-aqi-dashboard.onrender.com/api/v1/average-data`
+      );
+
+      const resData = await res.json();
+      setAverageData(resData[0]);
+      // setGraph(true);
+    } catch (error) {}
+  };
+
   useEffect(() => {
     fetchLocation();
     const interval = setInterval(() => {
@@ -196,9 +216,12 @@ const App = () => {
   }, []);
 
   useEffect(() => {}, [insideAQIData, outsideAQIData]);
+  useEffect(() => {
+    fetchAverageData();
+  }, []);
 
   return (
-    <div className="w-full  relative min-h-screen">
+    <div className="w-full  relative min-h-screen xl:h-screen xl:overflow-hidden">
       <img
         src="/shade-left.png"
         alt=""
@@ -360,7 +383,13 @@ const App = () => {
           {/* Outdoor Air Quality Section */}
           <div className="py-5 flex flex-col  gap-5">
             <h2 className="text-xl font-b text-green-600 mb-2">
-              Indoor Air Quality
+              Indoor Air Quality{" "}
+              <span
+                className="text-sm text-blue-800 cursor-pointer"
+                onClick={() => setGraph(true)}
+              >
+                (View Graph)
+              </span>
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
               <CircularProgress
@@ -397,6 +426,7 @@ const App = () => {
           </div>
         </div>
       </div>
+      {graph && <Graph data={averageData} setGraph={setGraph} />}
     </div>
   );
 };
