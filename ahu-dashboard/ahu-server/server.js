@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import cron from "node-cron";
 import deviceModel from "./models/sensor.js";
 import AverageModel from "./models/average.js";
-
 import mqtt from "mqtt";
 import morgan from "morgan";
 import routes from "./routes/index.js";

@@ -1,8 +1,8 @@
 import express from "express";
-import { getSensorData } from "../controllers/index.js";
+import { getDeviceData } from "../controllers/index.js";
 
 const router = express.Router();
 
-router.get("/sensor-data", getSensorData);
+router.get("/device-data/:id", getDeviceData);
 
 export default router;

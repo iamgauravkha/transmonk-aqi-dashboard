@@ -179,7 +179,7 @@ const Graph = ({ data, setGraph }) => {
             <div
               className={`w-[250px] h-[40px] border ${
                 menu ? "rounded-t-md" : "rounded-md"
-              } text-sm border-gray-300 relative px-3 flex items-center justify-between`}
+              } text-sm border-gray-300 relative px-3 flex items-center justify-between cursor-pointer`}
               onClick={() => setMenu((prev) => !prev)}
             >
               {graphLabel ? graphLabel : "Select"}

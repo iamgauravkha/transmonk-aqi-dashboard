@@ -39,7 +39,8 @@ mqttClient.on("connect", () => {
 
 // MQTT message handler
 mqttClient.on("message", async (topic, message) => {
-  // console.log(message);
+
+  console.log(message);
   if (topic === "transmonk/hvac/demo/data") {
     try {
       const data = JSON.parse(message.toString());

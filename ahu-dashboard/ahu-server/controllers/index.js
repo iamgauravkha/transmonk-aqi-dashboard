@@ -1,11 +1,19 @@
-import sensorModel from "../models/sensor.js";
+import deviceModel from "../models/device.js";
 
-export const getSensorData = async (req, res) => {
+export const getDeviceData = async (req, res) => {
   try {
-    const data = await sensorModel.find({ deviceId: "TC-IOT0001" });
-    res.json(data);
+    const data = await deviceModel.find({ deviceId: req.params.id });
+    res.status(200).json({
+      success: true,
+      message: "Device data fetched successfully",
+      apiResponse: data,
+    });
   } catch (err) {
-    console.error("Error querying database:", err);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Error from 'getDeviceData' controller - ", err);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      apiResponse: err,
+    });
   }
 };

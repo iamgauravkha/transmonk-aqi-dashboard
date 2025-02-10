@@ -142,20 +142,10 @@ const App = () => {
       const API = await res.json();
       let date = new Date().toLocaleString();
       const aqiPM25 = Math.round(
-        calculateAQI(
-          API[0]?.massConcentrationPm2p5[
-            API[0]?.massConcentrationPm2p5?.length - 1
-          ]?.value || 0,
-          PM25_BREAKPOINTS
-        )
+        calculateAQI(API?.massConcentrationPm2p5?.value || 0, PM25_BREAKPOINTS)
       );
       const aqiPM10 = Math.round(
-        calculateAQI(
-          API[0]?.massConcentrationPm10p0[
-            API[0]?.massConcentrationPm10p0?.length - 1
-          ]?.value || 0,
-          PM10_BREAKPOINTS
-        )
+        calculateAQI(API?.massConcentrationPm10p0?.value || 0, PM10_BREAKPOINTS)
       );
       const overallAQI = Math.max(aqiPM25, aqiPM10);
       const { category, color } = getAQICategory(overallAQI);
@@ -166,22 +156,12 @@ const App = () => {
         updatedAt: date,
         aqi: overallAQI || 0,
         sensorsData: {
-          pm_2_5:
-            API[0]?.massConcentrationPm2p5[
-              API[0]?.massConcentrationPm2p5?.length - 1
-            ]?.value || 0,
-          pm_10:
-            API[0]?.massConcentrationPm10p0[
-              API[0]?.massConcentrationPm10p0?.length - 1
-            ]?.value || 0,
-          co_2: API[0]?.cO2[API[0]?.cO2?.length - 1]?.value || 0,
-          temperature:
-            API[0]?.ambientTemperature[API[0]?.ambientTemperature?.length - 1]
-              ?.value || 0,
-          humidity:
-            API[0]?.ambientHumidity[API[0]?.ambientHumidity?.length - 1]
-              ?.value || 0,
-          vocIndex: API[0]?.vocIndex[API[0]?.vocIndex?.length - 1]?.value || 0,
+          pm_2_5: API?.massConcentrationPm2p5?.value || 0,
+          pm_10: API?.massConcentrationPm10p0?.value || 0,
+          co_2: API?.cO2?.value || 0,
+          temperature: API?.ambientTemperature?.value || 0,
+          humidity: API?.ambientHumidity?.value || 0,
+          vocIndex: API?.vocIndex?.value || 0,
         },
       });
     } catch (error) {
@@ -227,7 +207,7 @@ const App = () => {
       <img
         src="/shade-left.png"
         alt=""
-        className="absolute top-0 left-0 z-[-1] h-full object-cover hidden lg:flex"
+        className="absolute top-0 left-0 z-[-1] h-full object-cover"
       />
       <img
         src="/shade-right.png"
@@ -240,13 +220,13 @@ const App = () => {
       </div>
       <div className="max-w-[1440px] mx-auto px-5 sm:px-10 flex flex-col gap-5">
         <div className=" py-5 flex flex-col items-center gap-5 lg:hidden">
-          <h2 className="text-2xl font-sb text-blue-700 mb-2">
+          <h2 className="text-2xl font-sb text-blue-500 mb-2">
             Air Quality Index
           </h2>
           <div className="flex w-full justify-around ">
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-3  w-[150px]">
               <div
-                className={`h-30 w-30 flex flex-col items-center justify-center rounded-full bg-blue-300 text-white text-2xl font-b`}
+                className={`h-30 w-30 flex flex-col items-center justify-center rounded-full bg-blue-400 text-white text-2xl font-b`}
                 style={{ background: `${outsideAQIColor}` }}
               >
                 {outsideAQIData ? (
@@ -257,15 +237,15 @@ const App = () => {
                 <h3 className="text-sm">Outside AQI</h3>
               </div>
               <p
-                className="text-sm font-sb"
+                className="text-sm font-sb text-center"
                 style={{ color: `${outsideAQIColor}` }}
               >
-                {outsideAQICategory}
+                {outsideAQICategory || "Loading..."}
               </p>
             </div>
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-3  w-[150px]">
               <div
-                className={`h-30 w-30 flex flex-col items-center justify-center rounded-full bg-[green] text-white text-2xl font-b`}
+                className={`h-30 w-30 flex flex-col items-center justify-center rounded-full bg-blue-400 text-white text-2xl font-b`}
                 style={{ background: `${insideAQIColor}` }}
               >
                 {insideAQIData ? (
@@ -276,23 +256,23 @@ const App = () => {
                 <h3 className="text-sm">Inside AQI</h3>
               </div>
               <p
-                className="text-sm font-sb"
+                className="text-sm font-sb text-center"
                 style={{ color: `${insideAQIColor}` }}
               >
-                {insideAQICategory}
+                {insideAQICategory || "Loading..."}
               </p>
             </div>
           </div>
           <p className="text-sm text-gray-600 flex flex-col items-center gap-2">
             Last updated
             <span className="text-xs text-black">
-              {outsideAQIData && outsideAQIData.updatedAt}
+              {outsideAQIData ? outsideAQIData.updatedAt : "Loading..."}
             </span>
           </p>
           <img
             src="/forest.jpg"
             alt="Forest"
-            className="w-[100%] mt-[-105px] sm:mt-[-350px] opacity-[100%] sm:opacity-[60%] z-[-1]"
+            className="w-[100%] mt-[-105px] sm:mt-[-350px] opacity-[100%] sm:opacity-[60%] z-[-1] mix-blend-multiply"
           />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-10 py-5">
@@ -311,13 +291,13 @@ const App = () => {
 
           {/* AQI Display */}
           <div className=" py-5 flex-col items-center gap-5 hidden lg:flex">
-            <h2 className="text-2xl font-sb text-blue-700 mb-2">
+            <h2 className="text-2xl font-sb text-blue-500 mb-2">
               Air Quality Index
             </h2>
             <div className="flex w-full justify-around ">
-              <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col items-center gap-3  w-[150px]">
                 <div
-                  className={`h-30 w-30 flex flex-col items-center justify-center rounded-full bg-blue-300 text-white text-2xl font-b`}
+                  className={`h-30 w-30 flex flex-col items-center justify-center rounded-full bg-blue-400 text-white text-2xl font-b`}
                   style={{ background: `${outsideAQIColor}` }}
                 >
                   {outsideAQIData ? (
@@ -328,15 +308,15 @@ const App = () => {
                   <h3 className="text-sm">Outside AQI</h3>
                 </div>
                 <p
-                  className="text-sm font-sb"
+                  className="text-sm font-sb text-center"
                   style={{ color: `${outsideAQIColor}` }}
                 >
                   {outsideAQICategory || "Loading..."}
                 </p>
               </div>
-              <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col items-center gap-3  w-[150px]">
                 <div
-                  className={`h-30 w-30 flex flex-col items-center justify-center rounded-full bg-[green] text-white text-2xl font-b`}
+                  className={`h-30 w-30 flex flex-col items-center justify-center rounded-full bg-blue-400 text-white text-2xl font-b`}
                   style={{ background: `${insideAQIColor}` }}
                 >
                   {insideAQIData ? (
@@ -347,7 +327,7 @@ const App = () => {
                   <h3 className="text-sm">Inside AQI</h3>
                 </div>
                 <p
-                  className="text-sm font-sb"
+                  className="text-sm font-sb text-center"
                   style={{ color: `${insideAQIColor}` }}
                 >
                   {insideAQICategory || "Loading..."}
