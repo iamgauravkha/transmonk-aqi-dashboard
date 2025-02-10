@@ -23,7 +23,7 @@ export const calculateAQI = (concentration, breakpoints) => {
       return ((iHigh - iLow) / (cHigh - cLow)) * (concentration - cLow) + iLow;
     }
   }
-  return null; // Out of range
+  return null;
 };
 
 export const getAQICategory = (aqi) => {

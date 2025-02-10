@@ -8,7 +8,7 @@ const Navbar = ({ location }) => {
         className="w-[160px] aspect-auto self-start sm:self-center"
         alt="logo"
       />
-      <div className="text-xl text-gray-800 w-[250px] rounded-b-2xl p-2 flex items-center gap-5 justify-center bg-white font-m">
+      <div className="text-xl text-gray-800 min-w-[250px] rounded-b-2xl p-2 flex items-center gap-5 justify-center bg-white font-m">
         <MdOutlineShareLocation className="text-blue-500 text-2xl" />
         {location ? (
           location

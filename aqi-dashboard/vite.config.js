@@ -5,11 +5,11 @@ import tailwindcss from "@tailwindcss/vite";
 
 const manifestForPlugIn = {
   registerType: "prompt",
-  includeAssests: ["favicon.ico", "apple-touch-icon.png", "maskable_icon.png"],
+  includeAssests: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
   manifest: {
-    name: "React-vite-app",
-    short_name: "react-vite-app",
-    description: "I am a simple vite app",
+    name: "AQI Dashboard",
+    short_name: "AQI Dashboard",
+    description: "Modern AQI Dashboard",
     icons: [
       {
         src: "/android-chrome-192x192.png",
@@ -44,6 +44,7 @@ const manifestForPlugIn = {
     orientation: "portrait",
   },
 };
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss(), VitePWA(manifestForPlugIn)],

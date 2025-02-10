@@ -24,7 +24,7 @@ const CircularProgress = ({ value, max = 100, heading, unit }) => {
           cx="30"
           cy="30"
           r={radius}
-          stroke="#EC5C3F"
+          stroke="#F97316"
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeLinecap="round"
@@ -51,12 +51,12 @@ const CircularProgress = ({ value, max = 100, heading, unit }) => {
           <tspan x="30" dy="-2" fontSize="9" fill="black">
             {value == 0 ? "NA" : value}
           </tspan>
-          <tspan x="30" dy="12" fill="#EC5C3F" fontSize="7">
+          <tspan x="30" dy="12" fill="black" fontSize="7">
             {unit}
           </tspan>
         </motion.text>
       </svg>
-      <p className="text-xs font-medium text-gray-600 mt-2">{heading}</p>
+      <p className="text-sm font-medium text-gray-600 mt-2">{heading}</p>
     </div>
   );
 };

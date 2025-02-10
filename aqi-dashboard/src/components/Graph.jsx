@@ -58,11 +58,12 @@ export const options = {
 const labels = ["12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM", "6 PM"];
 
 const Graph = ({ data, setGraph }) => {
+  console.log(data);
   const chartRef1 = useRef(null);
   const [gradientone, setGradientone] = useState(null);
   const [selectedReading, setSelectedReading] = useState("cO2");
   const [menu, setMenu] = useState(false);
-  const [graphLabel, setGraphLabel] = useState(null);
+  const [graphLabel, setGraphLabel] = useState("PM 2.5");
 
   const formatData = (data) => {
     return data.hours
@@ -165,67 +166,91 @@ const Graph = ({ data, setGraph }) => {
         >
           <IoClose className="text-3xl" />
         </button>
-        <div className="flex flex-col gap-1 self-end">
-          <h1>Select Sensor</h1>
-          <div
-            className="w-[250px] h-[40px] border rounded-md text-sm border-gray-300 relative px-3 flex items-center justify-between "
-            onClick={() => setMenu((prev) => !prev)}
-          >
-            {graphLabel ? graphLabel : "Select"}
-            {!menu && <IoIosArrowDown className="text-xl" />}
-            {menu && <IoIosArrowUp className="text-xl" />}
-            {menu && (
-              <div className="border border-gray-300 shadow-2xl  w-full flex flex-col absolute top-[120%] left-0 rounded-md p-2 gap-2 bg-white">
-                <button
-                  className="w-full h-[40px] border border-gray-300 rounded-md cursor-pointer"
-                  onClick={(e) => {
-                    readingChangeHandler(e, "massConcentrationPm2p5", "PM 2.5");
-                  }}
-                >
-                  PM 2.5
-                </button>
-                <button
-                  className="w-full h-[40px] border border-gray-300 rounded-md cursor-pointer"
-                  onClick={(e) =>
-                    readingChangeHandler(e, "massConcentrationPm10p0", "PM 10")
-                  }
-                >
-                  PM 10
-                </button>
-                <button
-                  className="w-full h-[40px] border border-gray-300 rounded-md cursor-pointer"
-                  onClick={(e) => readingChangeHandler(e, "cO2", "CO2")}
-                >
-                  CO2
-                </button>
-                <button
-                  className="w-full h-[40px] border border-gray-300 rounded-md cursor-pointer"
-                  onClick={(e) =>
-                    readingChangeHandler(e, "ambientTemperature", "Temperature")
-                  }
-                >
-                  Temperature
-                </button>
-                <button
-                  className="w-full h-[40px] border border-gray-300 rounded-md cursor-pointer"
-                  onClick={(e) =>
-                    readingChangeHandler(e, "ambientHumidity", "Humidity")
-                  }
-                >
-                  Humidity
-                </button>
-                <button
-                  className="w-full h-[40px] border border-gray-300 rounded-md cursor-pointer"
-                  onClick={(e) =>
-                    readingChangeHandler(e, "vocIndex", "VOC Index")
-                  }
-                >
-                  VOC Index
-                </button>
-              </div>
-            )}
+        <div className="flex w-full items-center justify-between flex-wrap gap-5">
+          <h2 className="font-sb text-blue-500 text-base sm:text-xl flex flex-col gap-1">
+            {graphLabel} - Sensor Data
+            <span className="text-xs text-blue-950">
+              {new Date(data.currentDay).toLocaleString()}
+            </span>
+          </h2>
+
+          <div className="flex flex-col gap-1">
+            <h1>Select Sensor</h1>
+            <div
+              className={`w-[250px] h-[40px] border ${
+                menu ? "rounded-t-md" : "rounded-md"
+              } text-sm border-gray-300 relative px-3 flex items-center justify-between`}
+              onClick={() => setMenu((prev) => !prev)}
+            >
+              {graphLabel ? graphLabel : "Select"}
+              {!menu && <IoIosArrowDown className="text-xl" />}
+              {menu && <IoIosArrowUp className="text-xl" />}
+              {menu && (
+                <div className="border border-gray-300 shadow-2xl  w-full flex flex-col absolute top-[105%] left-0 rounded-b-md bg-white text-xs">
+                  <button
+                    className="w-full h-[30px] border-b border-gray-300 hover:bg-gray-300 cursor-pointer"
+                    onClick={(e) => {
+                      readingChangeHandler(
+                        e,
+                        "massConcentrationPm2p5",
+                        "PM 2.5"
+                      );
+                    }}
+                  >
+                    PM 2.5
+                  </button>
+                  <button
+                    className="w-full h-[30px] border-b border-gray-300 hover:bg-gray-300 cursor-pointer"
+                    onClick={(e) =>
+                      readingChangeHandler(
+                        e,
+                        "massConcentrationPm10p0",
+                        "PM 10"
+                      )
+                    }
+                  >
+                    PM 10
+                  </button>
+                  <button
+                    className="w-full h-[30px] border-b border-gray-300 hover:bg-gray-300 cursor-pointer"
+                    onClick={(e) => readingChangeHandler(e, "cO2", "CO2")}
+                  >
+                    CO2
+                  </button>
+                  <button
+                    className="w-full h-[30px] border-b border-gray-300 hover:bg-gray-300 cursor-pointer"
+                    onClick={(e) =>
+                      readingChangeHandler(
+                        e,
+                        "ambientTemperature",
+                        "Temperature"
+                      )
+                    }
+                  >
+                    Temperature
+                  </button>
+                  <button
+                    className="w-full h-[30px] border-b border-gray-300 hover:bg-gray-300 cursor-pointer"
+                    onClick={(e) =>
+                      readingChangeHandler(e, "ambientHumidity", "Humidity")
+                    }
+                  >
+                    Humidity
+                  </button>
+                  <button
+                    className="w-full h-[30px] border-gray-300 hover:bg-gray-300 cursor-pointer"
+                    onClick={(e) =>
+                      readingChangeHandler(e, "vocIndex", "VOC Index")
+                    }
+                  >
+                    VOC Index
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
         <div className="h-[300px] w-[100%] bg-white p-5 rounded-md border-1 border-gray-200">
           <Line ref={chartRef1} options={options} data={graphData} />
         </div>

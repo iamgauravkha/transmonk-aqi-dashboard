@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import CircularProgress from "./components/CircularProgress";
 import HorizontalProgress from "./components/HorizontalProgress";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 import {
   calculateAQI,
   getAQICategory,
@@ -9,40 +11,50 @@ import {
 } from "./utils/aqiUtils";
 import Navbar from "./components/Navbar";
 import Graph from "./components/Graph";
+import toast from "react-hot-toast";
+import OutsideAirQuality from "./components/OutsideAirQuality";
+import InsideAirQuality from "./components/InsideAirQuality";
 
 const App = () => {
   const [location, setLocation] = useState(null);
   const [graph, setGraph] = useState(false);
-  const [outsideAQIData, setOutsideAQIData] = useState({
-    updatedAt: null,
-    aqi: 0,
-    sensorsData: {
-      pm_2_5: 0,
-      pm_10: 0,
-      co_2: 0,
-      temperature: 0,
-      humidity: 0,
-      vocIndex: 0,
-    },
-  });
-
-  const [insideAQIData, setInsideAQIData] = useState({
-    updatedAt: null,
-    aqi: 0,
-    sensorsData: {
-      pm_2_5: 0,
-      pm_10: 0,
-      co_2: 0,
-      temperature: 0,
-      humidity: 0,
-      vocIndex: 0,
-    },
-  });
-
   const [insideAQIColor, setInsideAQIColor] = useState("");
   const [insideAQICategory, setInsideAQICategory] = useState("");
   const [outsideAQIColor, setoutsideAQIColor] = useState("");
   const [outsideAQICategory, setoutsideAQICategory] = useState("");
+  const [averageData, setAverageData] = useState(null);
+
+  const [outsideAQIData, setOutsideAQIData] = useState(
+    // {
+    // updatedAt: null,
+    // aqi: 0,
+    // sensorsData: {
+    //   pm_2_5: 0,
+    //   pm_10: 0,
+    //   co_2: 0,
+    //   temperature: 0,
+    //   humidity: 0,
+    //   vocIndex: 0,
+    // },
+    // }
+    null
+  );
+
+  const [insideAQIData, setInsideAQIData] = useState(
+    // {
+    // updatedAt: null,
+    // aqi: 0,
+    // sensorsData: {
+    //   pm_2_5: 0,
+    //   pm_10: 0,
+    //   co_2: 0,
+    //   temperature: 0,
+    //   humidity: 0,
+    //   vocIndex: 0,
+    // },
+    // }
+    null
+  );
 
   const fetchLocation = () => {
     if (navigator.geolocation) {
@@ -75,7 +87,7 @@ const App = () => {
 
   const fetchOutsideAQI = async (latitude, longitude) => {
     try {
-      const API_KEY = "f6c9e22dafffd36795dc46c3a2ecc0b1"; // Ensure this is valid
+      const API_KEY = "f6c9e22dafffd36795dc46c3a2ecc0b1";
       const airPollutionAPIResponse = await fetch(
         `https://api.openweathermap.org/data/2.5/air_pollution?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`
       );
@@ -89,11 +101,9 @@ const App = () => {
 
       const API_1 = await airPollutionAPIResponse.json();
       const API_2 = await weatherAPIResponse.json();
-
       let date = API_1?.list?.[0]?.dt
         ? new Date(API_1.list[0].dt * 1000).toLocaleString()
         : new Date().toLocaleString();
-
       const aqiPM25 = Math.round(
         calculateAQI(API_1?.list?.[0]?.components?.pm2_5 || 0, PM25_BREAKPOINTS)
       );
@@ -104,17 +114,16 @@ const App = () => {
       const { category, color } = getAQICategory(overallAQI);
       setoutsideAQIColor(color);
       setoutsideAQICategory(category);
-
       setOutsideAQIData({
         updatedAt: date,
         aqi: overallAQI || 0,
         sensorsData: {
           pm_2_5: API_1?.list?.[0]?.components?.pm2_5 || 0,
           pm_10: API_1?.list?.[0]?.components?.pm10 || 0,
-          co_2: 0, // OpenWeather API doesn’t provide CO2
+          co_2: 0,
           temperature: API_2?.main?.temp / 10 || 0,
           humidity: API_2?.main?.humidity || 0,
-          vocIndex: 0, // VOC Index not provided by API
+          vocIndex: 0,
         },
       });
     } catch (error) {
@@ -122,19 +131,16 @@ const App = () => {
     }
   };
 
-  let colour = "";
   const fetchInsideAQI = async () => {
     try {
       const res = await fetch(
         import.meta.env.VITE_ENVIRONMENT
           ? `http://localhost:4500/api/v1/sensor-data`
-          : `https://transmonk-aqi-dashboard.onrender.com/api/v1/sensor-data`
+          : `https://transmonk-aqi-dash.onrender.com/api/v1/sensor-data`
       );
 
       const API = await res.json();
-
       let date = new Date().toLocaleString();
-
       const aqiPM25 = Math.round(
         calculateAQI(
           API[0]?.massConcentrationPm2p5[
@@ -156,7 +162,6 @@ const App = () => {
 
       setInsideAQIColor(color);
       setInsideAQICategory(category);
-
       setInsideAQIData({
         updatedAt: date,
         aqi: overallAQI || 0,
@@ -184,20 +189,16 @@ const App = () => {
     }
   };
 
-  const [selectedReading, setSelectedReading] = useState(""); // Default reading
-  const [averageData, setAverageData] = useState(null); // Default reading
-
   const fetchAverageData = async () => {
     try {
       const res = await fetch(
         import.meta.env.VITE_ENVIRONMENT
           ? `http://localhost:4500/api/v1/average-data`
-          : `https://transmonk-aqi-dashboard.onrender.com/api/v1/average-data`
+          : `https://transmonk-aqi-dash.onrender.com/api/v1/average-data`
       );
 
       const resData = await res.json();
       setAverageData(resData[0]);
-      // setGraph(true);
     } catch (error) {}
   };
 
@@ -216,12 +217,13 @@ const App = () => {
   }, []);
 
   useEffect(() => {}, [insideAQIData, outsideAQIData]);
+
   useEffect(() => {
     fetchAverageData();
   }, []);
 
   return (
-    <div className="w-full  relative min-h-screen xl:h-screen xl:overflow-hidden">
+    <div className="w-full relative min-h-screen xl:h-screen xl:overflow-hidden">
       <img
         src="/shade-left.png"
         alt=""
@@ -247,7 +249,11 @@ const App = () => {
                 className={`h-30 w-30 flex flex-col items-center justify-center rounded-full bg-blue-300 text-white text-2xl font-b`}
                 style={{ background: `${outsideAQIColor}` }}
               >
-                {outsideAQIData.aqi}
+                {outsideAQIData ? (
+                  outsideAQIData?.aqi
+                ) : (
+                  <span className="text-xs">Loading...</span>
+                )}
                 <h3 className="text-sm">Outside AQI</h3>
               </div>
               <p
@@ -262,7 +268,11 @@ const App = () => {
                 className={`h-30 w-30 flex flex-col items-center justify-center rounded-full bg-[green] text-white text-2xl font-b`}
                 style={{ background: `${insideAQIColor}` }}
               >
-                {insideAQIData.aqi}
+                {insideAQIData ? (
+                  insideAQIData.aqi
+                ) : (
+                  <span className="text-xs">Loading...</span>
+                )}
                 <h3 className="text-sm">Inside AQI</h3>
               </div>
               <p
@@ -276,7 +286,7 @@ const App = () => {
           <p className="text-sm text-gray-600 flex flex-col items-center gap-2">
             Last updated
             <span className="text-xs text-black">
-              {outsideAQIData.updatedAt}
+              {outsideAQIData && outsideAQIData.updatedAt}
             </span>
           </p>
           <img
@@ -285,51 +295,19 @@ const App = () => {
             className="w-[100%] mt-[-105px] sm:mt-[-350px] opacity-[100%] sm:opacity-[60%] z-[-1]"
           />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-10 ">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-10 py-5">
           {/* Outdoor Air Quality Section */}
-          <div className="py-5 flex flex-col gap-5">
-            <h2 className="text-xl font-b text-green-600 mb-2">
-              Outdoor Air Quality
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-              <CircularProgress
-                value={outsideAQIData.sensorsData.pm_2_5}
-                heading="PM2.5"
-                unit={"µg/m³"}
-                max={1000}
-              />
-              <CircularProgress
-                value={outsideAQIData.sensorsData.pm_10}
-                heading="PM10"
-                unit={"µg/m³"}
-                max={1000}
-              />
-              <CircularProgress
-                value={outsideAQIData.sensorsData.co_2}
-                heading="CO2"
-                unit={"ppm"}
-                max={2000}
-              />
-            </div>
-            <HorizontalProgress
-              value={outsideAQIData.sensorsData.temperature}
-              heading="Temperature"
-              unit={"°C"}
-              max={100}
+
+          {outsideAQIData ? (
+            <OutsideAirQuality outsideAQIData={outsideAQIData} />
+          ) : (
+            <Skeleton
+              count={5}
+              height={120}
+              baseColor="#E5E7EB"
+              borderRadius={10}
             />
-            <HorizontalProgress
-              value={outsideAQIData.sensorsData.humidity}
-              heading="Humidity"
-              unit={"%"}
-              max={100}
-            />
-            <HorizontalProgress
-              value={outsideAQIData.sensorsData.vocIndex}
-              heading="VOC Index"
-              unit={"ppb"}
-              max={500}
-            />
-          </div>
+          )}
 
           {/* AQI Display */}
           <div className=" py-5 flex-col items-center gap-5 hidden lg:flex">
@@ -342,14 +320,18 @@ const App = () => {
                   className={`h-30 w-30 flex flex-col items-center justify-center rounded-full bg-blue-300 text-white text-2xl font-b`}
                   style={{ background: `${outsideAQIColor}` }}
                 >
-                  {outsideAQIData.aqi}
+                  {outsideAQIData ? (
+                    outsideAQIData.aqi
+                  ) : (
+                    <span className="text-xs">Loading...</span>
+                  )}
                   <h3 className="text-sm">Outside AQI</h3>
                 </div>
                 <p
                   className="text-sm font-sb"
                   style={{ color: `${outsideAQIColor}` }}
                 >
-                  {outsideAQICategory}
+                  {outsideAQICategory || "Loading..."}
                 </p>
               </div>
               <div className="flex flex-col items-center gap-3">
@@ -357,73 +339,48 @@ const App = () => {
                   className={`h-30 w-30 flex flex-col items-center justify-center rounded-full bg-[green] text-white text-2xl font-b`}
                   style={{ background: `${insideAQIColor}` }}
                 >
-                  {insideAQIData.aqi}
+                  {insideAQIData ? (
+                    insideAQIData.aqi
+                  ) : (
+                    <span className="text-xs">Loading...</span>
+                  )}
                   <h3 className="text-sm">Inside AQI</h3>
                 </div>
                 <p
                   className="text-sm font-sb"
                   style={{ color: `${insideAQIColor}` }}
                 >
-                  {insideAQICategory}
+                  {insideAQICategory || "Loading..."}
                 </p>
               </div>
             </div>
             <p className="text-sm text-gray-600 flex flex-col items-center gap-2">
               Last updated
               <span className="text-xs text-black">
-                {outsideAQIData.updatedAt}
+                {outsideAQIData ? outsideAQIData.updatedAt : "Loading..."}
               </span>
             </p>
             <img
               src="/forest.jpg"
               alt="Forest"
-              className="w-[85%] my-[-10px]  z-[-2]"
+              className="w-[90%] my-[-10px]  z-[-2]"
             />
           </div>
           {/* Outdoor Air Quality Section */}
-          <div className="py-5 flex flex-col  gap-5">
-            <h2 className="text-xl font-b text-green-600 mb-2">
-              Indoor Air Quality{" "}
-              <span
-                className="text-sm text-blue-800 cursor-pointer"
-                onClick={() => setGraph(true)}
-              >
-                (View Graph)
-              </span>
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-              <CircularProgress
-                value={insideAQIData.sensorsData.pm_2_5}
-                heading="PM2.5"
-                unit={"µg/m³"}
-              />
-              <CircularProgress
-                value={insideAQIData.sensorsData.pm_10}
-                heading="PM10"
-                unit={"µg/m³"}
-              />
-              <CircularProgress
-                value={insideAQIData.sensorsData.co_2}
-                heading="CO2"
-                unit={"ppm"}
-              />
-            </div>
-            <HorizontalProgress
-              value={insideAQIData.sensorsData.temperature}
-              heading="Temperature"
-              unit={"°C"}
+          {insideAQIData ? (
+            <InsideAirQuality
+              insideAQIData={insideAQIData}
+              setGraph={setGraph}
+              averageData={averageData}
             />
-            <HorizontalProgress
-              value={insideAQIData.sensorsData.humidity}
-              heading="Humidity"
-              unit={"%"}
+          ) : (
+            <Skeleton
+              count={5}
+              height={120}
+              baseColor="#E5E7EB"
+              borderRadius={10}
             />
-            <HorizontalProgress
-              value={insideAQIData.sensorsData.vocIndex}
-              heading="VOC Index"
-              unit={"ppb"}
-            />
-          </div>
+          )}
         </div>
       </div>
       {graph && <Graph data={averageData} setGraph={setGraph} />}
