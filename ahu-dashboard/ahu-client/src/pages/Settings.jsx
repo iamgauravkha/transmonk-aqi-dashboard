@@ -63,6 +63,7 @@ const Settings = ({ setModal }) => {
     } catch (error) {
       console.log("Error:", error);
     } finally {
+      toast.dismiss(loadingCtn);
       setLoading(false);
     }
   };

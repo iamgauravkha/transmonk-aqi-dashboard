@@ -46,6 +46,7 @@ import AHUUnit from "../components/AHUUnit";
 import toast from "react-hot-toast";
 import Settings from "../pages/Settings";
 import { useParams } from "react-router-dom";
+import { get } from "mongoose";
 
 ChartJS.register(
   CategoryScale,
@@ -228,6 +229,19 @@ const Dashboard = () => {
       icon: valve,
     },
   ];
+
+  const getDeviceData = async () => {
+    const res = await fetch(
+      `http://localhost:4500/api/v1/device-data/TC-IOT0001`
+    );
+    const data = await res.json();
+    console.log(data);
+  };
+
+  useEffect(() => {
+    getDeviceData();
+  }, []);
+
   return (
     <div className="w-full bg-[#f2f2f6] relative">
       {modal ? (
@@ -243,7 +257,7 @@ const Dashboard = () => {
               />
             </div>
             <div
-              className="mt-10 sm:mt-0 sm:row-span-3 flex justify-between py-[16px] px-[20px] rounded-xl border-2 border-white bg-white"
+              className="mt-10 sm:mt-0 sm:row-span-3 flex justify-between overflow-hidden rounded-xl border-2 border-white bg-white"
               style={{
                 boxShadow: "0px 4px 2px 0px rgba(129, 168, 247, 0.4)",
               }}

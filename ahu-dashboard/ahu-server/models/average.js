@@ -7,9 +7,8 @@ const averageSchema = new mongoose.Schema(
     hours: [
       {
         hour: Number, // 0-23
-        // ...
-        sensorName: Number,
-        // ...
+        cO2: Number,
+        ambientTemperature: Number,
       },
     ],
   },
