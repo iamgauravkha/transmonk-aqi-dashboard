@@ -46,7 +46,6 @@ import AHUUnit from "../components/AHUUnit";
 import toast from "react-hot-toast";
 import Settings from "../pages/Settings";
 import { useParams } from "react-router-dom";
-import { get } from "mongoose";
 
 ChartJS.register(
   CategoryScale,
