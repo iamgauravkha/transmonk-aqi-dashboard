@@ -39,16 +39,29 @@ const Settings = ({ setModal, apiData, setSettingsUpdated }) => {
     console.log("Formatted Data:", formattedData);
     const deviceId = localStorage.getItem("id");
     try {
-      const response = await fetch(
-        `http://localhost:4500/api/v1/update-settings/${deviceId}`,
-        {
-          method: "POST", // Specify the HTTP method
-          headers: {
-            "Content-Type": "application/json", // Set the content type if sending JSON
-          },
-          body: JSON.stringify(formattedData), // Convert data to JSON string
-        }
-      );
+      // const response = await fetch(
+      //   `http://localhost:4500/api/v1/update-settings/${deviceId}`,
+      //   {
+      //     method: "POST", // Specify the HTTP method
+      //     headers: {
+      //       "Content-Type": "application/json", // Set the content type if sending JSON
+      //     },
+      //     body: JSON.stringify(formattedData), // Convert data to JSON string
+      //   }
+      // );
+
+      const url =
+        deviceId === "BAD-191073"
+          ? `https://tm-ahu-dash-api.onrender.com/api/v1//update-ba-settings/${deviceId}`
+          : `https://tm-ahu-dash-api.onrender.com/api/v1/update-settings/${deviceId}`;
+
+      const response = await fetch(url, {
+        method: "POST", // Specify the HTTP method
+        headers: {
+          "Content-Type": "application/json", // Set the content type if sending JSON
+        },
+        body: JSON.stringify(formattedData), // Convert data to JSON string
+      });
 
       const data = await response.json();
 

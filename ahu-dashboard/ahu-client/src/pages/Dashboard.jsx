@@ -127,16 +127,29 @@ const Dashboard = () => {
     }
     const deviceId = localStorage.getItem("id");
     try {
-      const response = await fetch(
-        `http://localhost:4500/api/v1/update-fan-speed/${deviceId}`,
-        {
-          method: "POST", // Specify the HTTP method
-          headers: {
-            "Content-Type": "application/json", // Set the content type if sending JSON
-          },
-          body: JSON.stringify(payload), // Convert data to JSON string
-        }
-      );
+      // const response = await fetch(
+      //   `http://localhost:4500/api/v1/update-fan-speed/${deviceId}`,
+      //   {
+      //     method: "POST", // Specify the HTTP method
+      //     headers: {
+      //       "Content-Type": "application/json", // Set the content type if sending JSON
+      //     },
+      //     body: JSON.stringify(payload), // Convert data to JSON string
+      //   }
+      // );
+
+      const url =
+        deviceId === "BAD-191073"
+          ? `https://tm-ahu-dash-api.onrender.com/api/v1/update-ba-fan-speed/${deviceId}`
+          : `https://tm-ahu-dash-api.onrender.com/api/v1/update-fan-speed/${deviceId}`;
+
+      const response = await fetch(url, {
+        method: "POST", // Specify the HTTP method
+        headers: {
+          "Content-Type": "application/json", // Set the content type if sending JSON
+        },
+        body: JSON.stringify(payload), // Convert data to JSON string
+      });
 
       const data = await response.json();
 
@@ -279,8 +292,11 @@ const Dashboard = () => {
   ];
 
   const getDeviceData = async () => {
+    // const res = await fetch(
+    //   `http://localhost:4500/api/v1/device-data/${params.id}`
+    // );
     const res = await fetch(
-      `http://localhost:4500/api/v1/device-data/${params.id}`
+      `https://tm-ahu-dash-api.onrender.com/api/v1/device-data/${params.id}`
     );
     const data = await res.json();
     console.log(data);
@@ -301,8 +317,11 @@ const Dashboard = () => {
   console.log("aqi", aqi);
 
   const getGraphData = async () => {
+    // const res = await fetch(
+    //   `http://localhost:4500/api/v1/device-graph-data/${params.id}`
+    // );
     const res = await fetch(
-      `http://localhost:4500/api/v1/device-graph-data/${params.id}`
+      `https://tm-ahu-dash-api.onrender.com/api/v1/device-graph-data/${params.id}`
     );
     const data = await res.json();
     console.log(data);
