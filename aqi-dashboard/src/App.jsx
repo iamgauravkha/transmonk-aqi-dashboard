@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import CircularProgress from "./components/CircularProgress";
-import HorizontalProgress from "./components/HorizontalProgress";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import {
@@ -23,60 +21,26 @@ const App = () => {
   const [outsideAQIColor, setoutsideAQIColor] = useState("");
   const [outsideAQICategory, setoutsideAQICategory] = useState("");
   const [averageData, setAverageData] = useState(null);
-
-  const [outsideAQIData, setOutsideAQIData] = useState(
-    // {
-    // updatedAt: null,
-    // aqi: 0,
-    // sensorsData: {
-    //   pm_2_5: 0,
-    //   pm_10: 0,
-    //   co_2: 0,
-    //   temperature: 0,
-    //   humidity: 0,
-    //   vocIndex: 0,
-    // },
-    // }
-    null
-  );
-
-  const [insideAQIData, setInsideAQIData] = useState(
-    // {
-    // updatedAt: null,
-    // aqi: 0,
-    // sensorsData: {
-    //   pm_2_5: 0,
-    //   pm_10: 0,
-    //   co_2: 0,
-    //   temperature: 0,
-    //   humidity: 0,
-    //   vocIndex: 0,
-    // },
-    // }
-    null
-  );
+  const [outsideAQIData, setOutsideAQIData] = useState(null);
+  const [insideAQIData, setInsideAQIData] = useState(null);
 
   const fetchLocation = () => {
-    if (navigator.geolocation) {
+    // Check if lat/long already exist in localStorage
+    const cachedLat = localStorage.getItem("lat");
+    const cachedLong = localStorage.getItem("long");
+
+    if (cachedLat && cachedLong) {
+      // Use cached location
+      const latitude = parseFloat(cachedLat);
+      const longitude = parseFloat(cachedLong);
+      updateLocation(latitude, longitude);
+    } else if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           localStorage.setItem("lat", latitude);
           localStorage.setItem("long", longitude);
-          fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-          )
-            .then((response) => response.json())
-            .then((data) => {
-              setLocation(
-                data?.address?.city ||
-                  data?.address?.state_district?.split(" ")[0] ||
-                  "Unknown location"
-              );
-              fetchOutsideAQI(latitude, longitude);
-              fetchInsideAQI();
-            })
-            .catch(() => setLocation("Error fetching location"));
+          updateLocation(latitude, longitude);
         },
         () => setLocation("Location access denied")
       );
@@ -84,6 +48,52 @@ const App = () => {
       setLocation("Geolocation not supported");
     }
   };
+
+  const updateLocation = (latitude, longitude) => {
+    fetch(
+      ` https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setLocation(
+          data?.address?.city ||
+            data?.address?.state_district?.split(" ")[0] ||
+            "Unknown location"
+        );
+        fetchOutsideAQI(latitude, longitude);
+        fetchInsideAQI();
+      })
+      .catch(() => setLocation("Error fetching location"));
+  };
+
+  // const fetchLocation = () => {
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         localStorage.setItem("lat", latitude);
+  //         localStorage.setItem("long", longitude);
+  //         fetch(
+  //           `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+  //         )
+  //           .then((response) => response.json())
+  //           .then((data) => {
+  //             setLocation(
+  //               data?.address?.city ||
+  //                 data?.address?.state_district?.split(" ")[0] ||
+  //                 "Unknown location"
+  //             );
+  //             fetchOutsideAQI(latitude, longitude);
+  //             fetchInsideAQI();
+  //           })
+  //           .catch(() => setLocation("Error fetching location"));
+  //       },
+  //       () => setLocation("Location access denied")
+  //     );
+  //   } else {
+  //     setLocation("Geolocation not supported");
+  //   }
+  // };
 
   const fetchOutsideAQI = async (latitude, longitude) => {
     try {
@@ -184,6 +194,7 @@ const App = () => {
 
   useEffect(() => {
     fetchLocation();
+
     const interval = setInterval(() => {
       fetchInsideAQI();
       fetchOutsideAQI(
@@ -191,8 +202,19 @@ const App = () => {
         localStorage.getItem("long")
       );
     }, 300000);
+
+    // Function to clear localStorage when the tab is closed or refreshed
+    const handleUnload = () => {
+      localStorage.removeItem("lat");
+      localStorage.removeItem("long");
+    };
+
+    // Listen for tab close or refresh
+    window.addEventListener("beforeunload", handleUnload);
+
     return () => {
       clearInterval(interval);
+      window.removeEventListener("beforeunload", handleUnload);
     };
   }, []);
 

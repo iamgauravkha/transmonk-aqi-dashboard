@@ -4,15 +4,13 @@ import averageModel from "../models/average.js";
 export const getSensorData = async (req, res) => {
   try {
     const data = await sensorModel.findOne({ deviceId: "TC-IOT0001" });
-
     if (!data) {
       return res.status(404).json({ error: "Device not found" });
     }
-
     // Extract latest values for each sensor
     const getLatestValue = (arr) =>
       arr?.length ? arr.sort((a, b) => b.timestamp - a.timestamp)[0] : null;
-
+    
     const latestData = {
       deviceId: data.deviceId,
       cO2: getLatestValue(data.cO2),

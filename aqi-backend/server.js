@@ -4,20 +4,17 @@ import dotenv from "dotenv";
 import cron from "node-cron";
 import deviceModel from "./models/sensor.js";
 import AverageModel from "./models/average.js";
-
 import mqtt from "mqtt";
 import morgan from "morgan";
 import routes from "./routes/index.js";
 dotenv.config();
 import { databaseConnection } from "./config/database.js";
-
 import trackModel from "./models/track.js";
 
 const app = express();
 app.use(cors({ origin: true }));
 app.use(morgan("tiny"));
 const PORT = process.env.PORT || 5500;
-const MAX_ENTRIES = 1000;
 
 databaseConnection();
 
@@ -27,7 +24,6 @@ const mqttClient = mqtt.connect(process.env.MQTT_URL, {
 });
 
 mqttClient.on("connect", () => {
-  // console.log("MQTT client connected");
   mqttClient.subscribe("transmonk/hvac/demo/data", (err) => {
     if (err) {
       // console.error("Error subscribing to topic:", err);
@@ -39,7 +35,6 @@ mqttClient.on("connect", () => {
 
 // MQTT message handler
 mqttClient.on("message", async (topic, message) => {
-
   console.log(message);
   if (topic === "transmonk/hvac/demo/data") {
     try {
@@ -123,6 +118,103 @@ mqttClient.on("message", async (topic, message) => {
 });
 
 // Function to calculate and store hourly averages
+// const calculateHourlyAverages = async () => {
+//   console.log("Running hourly average calculation...");
+
+//   const currentTime = new Date();
+//   const oneHourAgo = new Date(currentTime.getTime() - 60 * 60 * 1000);
+//   const currentHour = currentTime.getHours();
+//   const currentDay = currentTime.toISOString().split("T")[0]; // YYYY-MM-DD format
+
+//   try {
+//     // Get all devices
+//     const devices = await deviceModel.find();
+
+//     for (const device of devices) {
+//       let avgData = {
+//         cO2: 0,
+//         massConcentrationPm2p5: 0,
+//         massConcentrationPm10p0: 0,
+//         vocIndex: 0,
+//         ambientHumidity: 0,
+//         ambientTemperature: 0,
+//       };
+
+//       let count = 0;
+
+//       // Process each sensor to calculate averages
+//       for (const sensorType of Object.keys(avgData)) {
+//         const sensorValues = device[sensorType].filter(
+//           (entry) => entry.timestamp >= oneHourAgo
+//         );
+
+//         if (sensorValues.length > 0) {
+//           avgData[sensorType] =
+//             sensorValues.reduce((sum, entry) => sum + entry.value, 0) /
+//             sensorValues.length;
+//           count++;
+//         }
+//       }
+
+//       // If no data received, mark values as 0
+//       if (count === 0) {
+//         avgData = {
+//           cO2: 0,
+//           massConcentrationPm2p5: 0,
+//           massConcentrationPm10p0: 0,
+//           vocIndex: 0,
+//           ambientHumidity: 0,
+//           ambientTemperature: 0,
+//         };
+//       }
+
+//       // Check if an entry for the current day already exists
+//       let averageEntry = await AverageModel.findOne({
+//         deviceId: device.deviceId,
+//         currentDay,
+//       });
+
+//       if (!averageEntry) {
+//         averageEntry = new AverageModel({
+//           deviceId: device.deviceId,
+//           currentDay,
+//           hours: [],
+//         });
+//       }
+
+//       // Add or update the hourly data
+//       const hourIndex = averageEntry.hours.findIndex(
+//         (h) => h.hour === currentHour
+//       );
+//       if (hourIndex === -1) {
+//         averageEntry.hours.push({ hour: currentHour, ...avgData });
+//       } else {
+//         averageEntry.hours[hourIndex] = { hour: currentHour, ...avgData };
+//       }
+
+//       // Save the updated averages
+//       await averageEntry.save();
+
+//       // Delete processed sensor data from the device collection
+//       for (const sensorType of Object.keys(avgData)) {
+//         device[sensorType] = device[sensorType].filter(
+//           (entry) => entry.timestamp < oneHourAgo
+//         );
+//       }
+
+//       await device.save();
+//     }
+
+//     await trackModel.create({
+//       average: `Average calculated for ${currentDay} and ${currentHour} successfully.`,
+//     });
+
+//     console.log("Hourly averages calculated and stored successfully.");
+//   } catch (error) {
+//     console.error("Error in calculating hourly averages:", error);
+//   }
+// };
+
 const calculateHourlyAverages = async () => {
   console.log("Running hourly average calculation...");
 
@@ -144,19 +236,30 @@ const calculateHourlyAverages = async () => {
         ambientHumidity: 0,
         ambientTemperature: 0,
       };
-
       let count = 0;
 
-      // Process each sensor to calculate averages
+      // Store entries that will be used for average calculation
+      const entriesToProcess = {
+        cO2: [],
+        massConcentrationPm2p5: [],
+        massConcentrationPm10p0: [],
+        vocIndex: [],
+        ambientHumidity: [],
+        ambientTemperature: [],
+      };
+
+      // First identify entries within the last hour
       for (const sensorType of Object.keys(avgData)) {
-        const sensorValues = device[sensorType].filter(
+        entriesToProcess[sensorType] = device[sensorType].filter(
           (entry) => entry.timestamp >= oneHourAgo
         );
 
-        if (sensorValues.length > 0) {
+        if (entriesToProcess[sensorType].length > 0) {
           avgData[sensorType] =
-            sensorValues.reduce((sum, entry) => sum + entry.value, 0) /
-            sensorValues.length;
+            entriesToProcess[sensorType].reduce(
+              (sum, entry) => sum + entry.value,
+              0
+            ) / entriesToProcess[sensorType].length;
           count++;
         }
       }
@@ -200,11 +303,34 @@ const calculateHourlyAverages = async () => {
       // Save the updated averages
       await averageEntry.save();
 
-      // Delete processed sensor data from the device collection
+      // Enhanced deletion logic:
+      // 1. Delete processed entries
+      // 2. Delete any entries older than the processing window
       for (const sensorType of Object.keys(avgData)) {
-        device[sensorType] = device[sensorType].filter(
-          (entry) => entry.timestamp < oneHourAgo
+        // Find the oldest timestamp among the processed entries to use as a threshold
+        const oldestProcessedTimestamp =
+          entriesToProcess[sensorType].length > 0
+            ? Math.min(
+                ...entriesToProcess[sensorType].map((entry) =>
+                  entry.timestamp.getTime()
+                )
+              )
+            : oneHourAgo.getTime();
+
+        // Keep only entries that are:
+        // - Newer than the processing window (oneHourAgo)
+        // - AND were not part of the processed set
+        const processedTimestamps = new Set(
+          entriesToProcess[sensorType].map((entry) => entry.timestamp.getTime())
         );
+
+        device[sensorType] = device[sensorType].filter((entry) => {
+          const entryTime = entry.timestamp.getTime();
+          return (
+            entryTime > oneHourAgo.getTime() && // Keep only entries newer than processing window
+            !processedTimestamps.has(entryTime) // Remove processed entries
+          );
+        });
       }
 
       await device.save();
@@ -224,6 +350,20 @@ const calculateHourlyAverages = async () => {
 cron.schedule("0 * * * *", () => {
   console.log("Cron scheduled");
   calculateHourlyAverages();
+});
+
+// Schedule the task to run every day at 00:00 (midnight)
+cron.schedule("0 0 * * *", async () => {
+  try {
+    console.log("Running daily cleanup job...");
+
+    // Delete all records from the collection
+    await AverageModel.deleteMany({});
+
+    console.log("All records deleted. Fresh start for the new day.");
+  } catch (error) {
+    console.error("Error running cleanup job:", error);
+  }
 });
 
 app.use("/api/v1", routes);
