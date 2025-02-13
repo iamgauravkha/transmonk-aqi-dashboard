@@ -42,7 +42,7 @@ import {
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import { useRef, useEffect, useState } from "react";
-import AHUUnit from "../components/AHUUnit";
+// import AHUUnit from "../components/AHUUnit";
 import toast from "react-hot-toast";
 import Settings from "../pages/Settings";
 import { useParams } from "react-router-dom";
@@ -52,6 +52,7 @@ import {
   PM10_BREAKPOINTS,
   PM25_BREAKPOINTS,
 } from "../utils/aqiUtils";
+import Model from "../components/Model";
 
 ChartJS.register(
   CategoryScale,
@@ -354,12 +355,14 @@ const Dashboard = () => {
               />
             </div>
             <div
-              className="mt-10 sm:mt-0 sm:row-span-3 flex justify-between overflow-hidden rounded-xl border-2 border-white bg-white"
+              className="mt-10 sm:mt-0 sm:row-span-3 flex justify-between w-full overflow-hidden rounded-xl border-2 border-white bg-white"
               style={{
                 boxShadow: "0px 4px 2px 0px rgba(129, 168, 247, 0.4)",
               }}
             >
-              <AHUUnit />
+              <div className="w-full h-full bg-[#f5f5f5]">
+                <Model modelPath="/fan_3d_model.glb" />
+              </div>
             </div>
             <div
               className="flex justify-start sm:justify-center gap-2 flex-col sm:row-span-1 px-[20px] py-[20px] sm:py-[0px] rounded-xl border-2 border-white cus-background
