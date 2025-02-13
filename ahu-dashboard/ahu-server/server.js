@@ -45,7 +45,7 @@ mqttClient.on("connect", () => {
 // MQTT message handler
 mqttClient.on("message", async (topic, message) => {
   console.log("Msg from all devices");
-  console.log(message);
+  // console.log(message);
   if (topic === "transmonk/hvac/demo/data") {
     try {
       const data = JSON.parse(message.toString());
@@ -77,12 +77,12 @@ mqttClient.on("message", async (topic, message) => {
         setVoltTwo: data.Data[24],
         controlBy: data.Data[25],
       };
-      console.log(extractedData);
+      // console.log(extractedData);
 
       // Check if document with the same deviceId exists
       const existingEntry = await deviceModel.findOne({ deviceId });
 
-      console.log(existingEntry);
+      // console.log(existingEntry);
       if (existingEntry) {
         existingEntry.auto = extractedData.auto;
         existingEntry.setVoltOne = extractedData.setVoltOne;
@@ -115,18 +115,18 @@ mqttClient.on("message", async (topic, message) => {
         existingEntry.controlBy = extractedData.controlBy;
         // Save the updated entry
         await existingEntry.save();
-        console.log("Existing entry updated in database");
+        // console.log("Existing entry updated in database");
       } else {
         // Create a new entry if no existing entry with the same deviceId
         const newSensorData = new deviceModel(extractedData);
         await newSensorData.save();
-        console.log("New data inserted into database");
+        // console.log("New data inserted into database");
       }
     } catch (error) {
       console.error("Error processing MQTT message from all devices:", error);
     }
   } else if (topic === "transmonk/balanceair/site1/data") {
-    console.log("Msg from balance air device");
+    // console.log("Msg from balance air device");
     try {
       const data = JSON.parse(message.toString());
       const deviceId = "BAD-191073";
@@ -157,12 +157,12 @@ mqttClient.on("message", async (topic, message) => {
         setVoltTwo: data.Data[24],
         controlBy: data.Data[25],
       };
-      console.log(extractedData);
+      // console.log(extractedData);
 
       // Check if document with the same deviceId exists
       const existingEntry = await deviceModel.findOne({ deviceId });
 
-      console.log(existingEntry);
+      // console.log(existingEntry);
       if (existingEntry) {
         existingEntry.auto = extractedData.auto;
         existingEntry.setVoltOne = extractedData.setVoltOne;
@@ -195,7 +195,7 @@ mqttClient.on("message", async (topic, message) => {
         existingEntry.controlBy = extractedData.controlBy;
         // Save the updated entry
         await existingEntry.save();
-        console.log("Existing entry updated in database");
+        // console.log("Existing entry updated in database");
       } else {
         // Create a new entry if no existing entry with the same deviceId
         const newSensorData = new deviceModel(extractedData);

@@ -1,15 +1,17 @@
+import averageModel from "../models/average.js";
 import deviceModel from "../models/device.js";
 import { mqttClient } from "../server.js";
 
 export const getDeviceData = async (req, res) => {
   try {
-    const data = await deviceModel.find({ deviceId: req.params.id });
+    const data = await deviceModel.findOne({ deviceId: req.params.id });
     if (!data) {
       return res
         .status(404)
         .json({ success: false, message: "Device not found" });
     }
 
+    console.log(data);
     // Function to get the last element of an array
     const getLatestValue = (arr) => (arr?.length ? arr[arr.length - 1] : null);
 
@@ -18,20 +20,20 @@ export const getDeviceData = async (req, res) => {
       auto: data.auto,
       setVoltOne: data.setVoltOne,
       minVoltFan: data.minVoltFan,
-      manVoltFan: data.manVoltFan,
+      manVoltFan: data.maxVoltFan,
       minTempOne: data.minTempOne,
       maxTempOne: data.maxTempOne,
       minVoltDamper: data.minVoltDamper,
       maxVoltDamper: data.maxVoltDamper,
       minCO2: data.minCO2,
       maxCO2: data.maxCO2,
-      cO2: getLatestValue(data.cO2),
+      cO2: getLatestValue(data.cO2)?.value || 0,
       dP: data.dP,
       pM25: data.pM25,
       pM10: data.pM10,
       vocIndex: data.vocIndex,
       ambientHumidity: data.ambientHumidity,
-      ambientTemperature: getLatestValue(data.ambientTemperature),
+      ambientTemperature: getLatestValue(data.ambientTemperature)?.value || 0,
       avgTemperature: data.avgTemperature,
       fanRPM: data.fanRPM,
       fanACVoltage: data.fanACVoltage,
@@ -42,12 +44,34 @@ export const getDeviceData = async (req, res) => {
       updatedAt: data.updatedAt,
     };
 
-    console.log(data);
-
     res.status(200).json({
       success: true,
       message: "Device data fetched successfully",
       apiResponse: latestData,
+    });
+  } catch (err) {
+    console.error("Error from 'getDeviceData' controller - ", err);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      apiResponse: err,
+    });
+  }
+};
+
+export const getAverageData = async (req, res) => {
+  try {
+    const data = await averageModel.findOne({ deviceId: req.params.id });
+    if (!data) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Device not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Data fetched successfully",
+      apiResponse: data,
     });
   } catch (err) {
     console.error("Error from 'getDeviceData' controller - ", err);
@@ -103,6 +127,8 @@ export const updateFanAndValveSpeed = async (req, res) => {
       speedpc: speedValue,
       damper: valveValue,
     });
+
+    console.log("Message:", message);
     mqttClient.publish(topic, message, (err) => {
       if (err) {
         res.status(500).json({
@@ -192,6 +218,7 @@ export const updateSettings = async (req, res) => {
     maxCO2,
     controlBy,
   } = req.body;
+
   try {
     const topic = "transmonk/hvac/demo/settings";
     const message = JSON.stringify({

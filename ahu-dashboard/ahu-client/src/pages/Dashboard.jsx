@@ -13,7 +13,7 @@ import { IoSettingsSharp } from "react-icons/io5";
 
 import { IoClose } from "react-icons/io5";
 
-import aqi from "../assets/AQI.svg";
+import aqiImg from "../assets/AQI.svg";
 import close from "../assets/close.svg";
 import co2 from "../assets/CO2.svg";
 import fan_capacity from "../assets/fan_capacity.svg";
@@ -23,7 +23,7 @@ import power from "../assets/Power.svg";
 import pressure from "../assets/Pressure.svg";
 import rh from "../assets/RH.svg";
 import tick from "../assets/tick.svg";
-import valve from "../assets/Valve.svg";
+import valveImg from "../assets/Valve.svg";
 import fan_rpm from "../assets/fan-rpm.svg";
 import ffu from "../assets/ahu.png";
 import Toaster from "react-hot-toast";
@@ -46,6 +46,12 @@ import AHUUnit from "../components/AHUUnit";
 import toast from "react-hot-toast";
 import Settings from "../pages/Settings";
 import { useParams } from "react-router-dom";
+import Graph from "../components/Graph";
+import {
+  calculateAQI,
+  PM10_BREAKPOINTS,
+  PM25_BREAKPOINTS,
+} from "../utils/aqiUtils";
 
 ChartJS.register(
   CategoryScale,
@@ -92,29 +98,62 @@ const Dashboard = () => {
   const params = useParams();
   const chartRef1 = useRef(null);
   const chartRef2 = useRef(null);
+  const [loading, setLoading] = useState(false);
+
   const [gradientone, setGradientone] = useState(null);
   const [gradienttwo, setGradienttwo] = useState(null);
-  const [speed, setSpeed] = useState(20);
+  const [speed, setSpeed] = useState();
+  const [valve, setValve] = useState();
+  const [aqi, setAqi] = useState();
   const [modal, setModal] = useState(false);
+  const [settingsUpdated, setSettingsUpdated] = useState(false);
 
-  const clickHandler = (value) => {
-    const loadingCtn = toast.loading("Please Wait...");
-    const payload = { type: "command", speedpc: 0 };
-    if (!value) {
-      payload.speedpc = 0;
+  const [apiData, setApiData] = useState(null);
+  const [graphData, setGraphData] = useState(null);
+
+  const clickHandler = async (sValue, vValue) => {
+    const loadingCtn = toast.loading("Loading");
+    setLoading(true);
+    const payload = { type: "command", speedValue: 0, valveValue: 0 };
+    if (!sValue) {
+      payload.speedValue = 0;
     } else {
-      payload.speedpc = value;
+      payload.speedValue = sValue;
     }
-    setTimeout(() => {
-      toast.dismiss(loadingCtn);
-      if (!value) {
-        toast.success("Fan Stopped");
-        setSpeed(0);
+    if (!vValue) {
+      payload.valveValue = 0;
+    } else {
+      payload.valveValue = vValue;
+    }
+    const deviceId = localStorage.getItem("id");
+    try {
+      const response = await fetch(
+        `http://localhost:4500/api/v1/update-fan-speed/${deviceId}`,
+        {
+          method: "POST", // Specify the HTTP method
+          headers: {
+            "Content-Type": "application/json", // Set the content type if sending JSON
+          },
+          body: JSON.stringify(payload), // Convert data to JSON string
+        }
+      );
+
+      const data = await response.json();
+
+      if (!data.success) {
+        toast.dismiss(loadingCtn);
+        toast.error("Error! Try again");
+        throw new Error("Something went wrong");
       } else {
-        toast.success("Speed Updated");
-        setSpeed(value);
+        toast.dismiss(loadingCtn);
+        toast.success("Fan Speed Successfully");
       }
-    }, 3000);
+    } catch (error) {
+      console.log("Error:", error);
+    } finally {
+      toast.dismiss(loadingCtn);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -137,7 +176,7 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("id", "12354");
+    localStorage.setItem("id", params.id);
   }, []);
 
   const data = {
@@ -180,71 +219,111 @@ const Dashboard = () => {
       label: "Temperature",
       value: "29°C",
       icon: group,
+      key: "ambientTemperature",
     },
     {
       label: "Fan RPM",
       value: "600",
       icon: fan_rpm,
+      key: "fanRPM",
     },
     {
       label: "RH",
       value: "29°C",
       icon: rh,
+      key: "ambientHumidity",
     },
     {
       label: "Fan % Capacity",
       value: "24%",
       icon: fan_capacity,
+      key: "setVoltOne",
     },
     {
       label: "CO2",
       value: "450 ppm",
       icon: co2,
+      key: "cO2",
     },
     {
       label: "PM 10 (µg/m³)",
       value: "80",
       icon: power,
+      key: "pM10",
     },
     {
       label: "PM 2.5 (µg/m³)",
       value: "72",
       icon: pm2_5,
+      key: "pM25",
     },
 
     {
       label: "Pressure (DP)",
       value: "200",
       icon: pressure,
+      key: "dP",
     },
     {
       label: "AQI",
       value: "200",
-      icon: aqi,
+      icon: aqiImg,
+      key: "vocIndex",
     },
     {
       label: "Valve",
       value: "38%",
-      icon: valve,
+      icon: valveImg,
+      key: "setVoltTwo",
     },
   ];
 
   const getDeviceData = async () => {
     const res = await fetch(
-      `http://localhost:4500/api/v1/device-data/TC-IOT0001`
+      `http://localhost:4500/api/v1/device-data/${params.id}`
     );
     const data = await res.json();
     console.log(data);
+    const aqiPM25 = Math.round(
+      calculateAQI(data.apiResponse.pM25 || 0, PM25_BREAKPOINTS)
+    );
+    const aqiPM10 = Math.round(
+      calculateAQI(data.apiResponse.pM10 || 0, PM10_BREAKPOINTS)
+    );
+    const overallAQI = Math.max(aqiPM25, aqiPM10);
+    console.log(overallAQI);
+    setAqi(overallAQI);
+    setApiData(data.apiResponse);
+    setSpeed(data.apiResponse.setVoltOne);
+    setValve(data.apiResponse.setVoltTwo);
+  };
+
+  console.log("aqi", aqi);
+
+  const getGraphData = async () => {
+    const res = await fetch(
+      `http://localhost:4500/api/v1/device-graph-data/${params.id}`
+    );
+    const data = await res.json();
+    console.log(data);
+    setGraphData(data.apiResponse);
   };
 
   useEffect(() => {
     getDeviceData();
-  }, []);
+    getGraphData();
+  }, [settingsUpdated]);
 
   return (
     <div className="w-full bg-[#f2f2f6] relative">
       {modal ? (
-        <Settings setModal={setModal} />
+        apiData && (
+          <Settings
+            setModal={setModal}
+            apiData={apiData}
+            setSettingsUpdated={setSettingsUpdated}
+          />
+        )
       ) : (
         <div className="max-w-[1440px] mx-auto px-5 py-5 gap-5 grid grid-cols-1 md:grid-cols-2 min-h-screen">
           <div className="grid grid-cols-1 sm:grid-rows-8 gap-[10px] ">
@@ -275,19 +354,27 @@ const Dashboard = () => {
                   <input
                     type="text"
                     className="border rounded-md border-gray-400 text-center w-[100px]"
-                    placeholder={speed}
+                    placeholder={speed ?? "NA"}
                     onChange={(e) => setSpeed(e.target.value)}
                   />
                   <button
-                    className="px-[9px] py-[4px] bg-[rgba(12,184,211,0.75)] hover:bg-[rgba(12,184,211,1)] text-white rounded-md font-sb cursor-pointer"
+                    className={`px-[9px] py-[4px] bg-[rgba(12,184,211,0.75)]  hover:bg-[rgba(12,184,211,1)] text-white rounded-md font-sb ${
+                      loading
+                        ? "cursor-not-allowed opacity-50"
+                        : "cursor-pointer"
+                    }`}
                     onClick={() => {
-                      clickHandler(speed);
+                      clickHandler(speed, valve);
                     }}
                   >
                     Change Speed
                   </button>
                   <button
-                    className="px-[9px] py-[4px] bg-red-500 hover:bg-red-600 text-white rounded-md font-sb cursor-pointer"
+                    className={`px-[9px] py-[4px] bg-red-500 hover:bg-red-600 text-white rounded-md font-sb ${
+                      loading
+                        ? "cursor-not-allowed opacity-50"
+                        : "cursor-pointer"
+                    }`}
                     onClick={() => {
                       clickHandler();
                     }}
@@ -323,7 +410,14 @@ const Dashboard = () => {
       height={175}
     /> */}
               <div className="h-[170px] w-full">
-                <Line ref={chartRef1} options={options} data={data} />
+                {graphData && (
+                  <Graph
+                    data={graphData}
+                    colorOne={"rgba(24,205,234,1)"}
+                    colorTwo={"rgba(172,244,255,1)"}
+                    labelOne={"cO2"}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -346,21 +440,28 @@ const Dashboard = () => {
                         <input
                           type="text"
                           className="border rounded-md border-gray-400 text-center w-[50px] text-black"
-                          placeholder={e.value}
-                          onChange={(e) => setSpeed(e.target.value)}
+                          placeholder={valve || "NA"}
+                          onChange={(e) => setValve(e.target.value)}
                         />
                         <button
                           className="px-[9px] py-[4px] bg-[rgba(12,184,211,0.75)] hover:bg-[rgba(12,184,211,1)] text-white rounded-md font-sb cursor-pointer"
                           onClick={() => {
-                            clickHandler(speed);
+                            clickHandler(speed, valve);
                           }}
                         >
                           Change
                         </button>
                       </div>
+                    ) : i === 8 ? (
+                      // <div className="text-[#0cb8d3] text-[20px] font-sb leading-[15px]">
+                      //   {apiData ? apiData[e.key] : "NA"}
+                      // </div>
+                      <div className="text-[#0cb8d3] text-[20px] font-sb leading-[15px]">
+                        {apiData ? aqi : "NA"}
+                      </div>
                     ) : (
                       <div className="text-[#0cb8d3] text-[20px] font-sb leading-[15px]">
-                        {e.value}
+                        {apiData ? apiData[e.key] : "NA"}
                       </div>
                     )}
                   </div>
@@ -392,7 +493,15 @@ const Dashboard = () => {
       height={175}
     /> */}
               <div className="h-[170px] w-auto">
-                <Line ref={chartRef2} options={options} data={data2} />
+                {/* <Line ref={chartRef2} options={options} data={data2} /> */}
+                {graphData && (
+                  <Graph
+                    data={graphData}
+                    colorOne={"rgba(52,98,236,1)"}
+                    colorTwo={"rgba(173,193,255,1)"}
+                    labelOne={"ambientTemperature"}
+                  />
+                )}
               </div>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  getAverageData,
   getDeviceData,
   updateBalanceAirFanAndValveSpeed,
   updateBalanceAirSettings,
@@ -10,6 +11,8 @@ import {
 const router = express.Router();
 
 router.get("/device-data/:id", getDeviceData);
+
+router.get("/device-graph-data/:id", getAverageData);
 
 // for all devices except balance air
 router.post("/update-settings/:id", updateSettings);

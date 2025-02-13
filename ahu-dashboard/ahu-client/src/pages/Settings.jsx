@@ -3,21 +3,21 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { IoClose } from "react-icons/io5";
 
-const Settings = ({ setModal }) => {
+const Settings = ({ setModal, apiData, setSettingsUpdated }) => {
   const [autoValue, setautoValue] = useState(0);
   const [controlByValue, setControlByValue] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const { register, handleSubmit } = useForm({
+  const { register, handleSubmit, reset } = useForm({
     defaultValues: {
-      minVoltFan: 0,
-      maxVoltFan: 0,
-      minTemp: 0,
-      maxTemp: 0,
-      minVoltDamper: 0,
-      maxVoltDamper: 0,
-      minCO2: 0,
-      maxCO2: 0,
+      minVoltFan: apiData.minVoltFan,
+      maxVoltFan: apiData.manVoltFan,
+      minTemp: apiData.minTempOne,
+      maxTemp: apiData.maxTempOne,
+      minVoltDamper: apiData.minVoltDamper,
+      maxVoltDamper: apiData.maxVoltDamper,
+      minCO2: apiData.minCO2,
+      maxCO2: apiData.maxCO2,
     },
   });
 
@@ -59,6 +59,8 @@ const Settings = ({ setModal }) => {
       } else {
         toast.dismiss(loadingCtn);
         toast.success("Settings Updated Successfully");
+        setSettingsUpdated((prev) => !prev);
+        setModal((prev) => !prev);
       }
     } catch (error) {
       console.log("Error:", error);
